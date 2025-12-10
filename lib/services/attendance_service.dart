@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:excel/excel.dart';
 import '../models/department.dart';
 import '../models/employee.dart';
@@ -10,17 +11,23 @@ class AttendanceService {
   /// TODO: Remove debug logging after validating the fix with actual Excel data
   static int? parseTimeToMinutes(String? timeStr) {
     if (timeStr == null || timeStr.trim().isEmpty) {
-      print('[DEBUG] parseTimeToMinutes: null or empty input');
+      if (kDebugMode) {
+        print('[DEBUG] parseTimeToMinutes: null or empty input');
+      }
       return null;
     }
     
     try {
       final cleanStr = timeStr.trim();
-      print('[DEBUG] parseTimeToMinutes: parsing "$cleanStr"');
+      if (kDebugMode) {
+        print('[DEBUG] parseTimeToMinutes: parsing "$cleanStr"');
+      }
       
       final parts = cleanStr.split(':');
       if (parts.length != 2) {
-        print('[DEBUG] parseTimeToMinutes: invalid format (no colon), parts=$parts');
+        if (kDebugMode) {
+          print('[DEBUG] parseTimeToMinutes: invalid format (no colon), parts=$parts');
+        }
         return null;
       }
       
@@ -28,15 +35,21 @@ class AttendanceService {
       final minute = int.parse(parts[1]);
       
       if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-        print('[DEBUG] parseTimeToMinutes: out of range hour=$hour, minute=$minute');
+        if (kDebugMode) {
+          print('[DEBUG] parseTimeToMinutes: out of range hour=$hour, minute=$minute');
+        }
         return null;
       }
       
       final result = hour * 60 + minute;
-      print('[DEBUG] parseTimeToMinutes: result=$result minutes ($hour:$minute)');
+      if (kDebugMode) {
+        print('[DEBUG] parseTimeToMinutes: result=$result minutes ($hour:$minute)');
+      }
       return result;
     } catch (e) {
-      print('[DEBUG] parseTimeToMinutes: exception parsing "$timeStr": $e');
+      if (kDebugMode) {
+        print('[DEBUG] parseTimeToMinutes: exception parsing "$timeStr": $e');
+      }
       return null;
     }
   }
@@ -78,13 +91,15 @@ class AttendanceService {
     AttendanceRecord record,
     Department department,
   ) {
-    print('[DEBUG] processDailyAttendance: date=${record.date}, dept=${department.name}');
-    print('[DEBUG]   jamMasukPagi="${record.jamMasukPagi}"');
-    print('[DEBUG]   jamKeluarPagi="${record.jamKeluarPagi}"');
-    print('[DEBUG]   jamMasukSiang="${record.jamMasukSiang}"');
-    print('[DEBUG]   jamKeluarSiang="${record.jamKeluarSiang}"');
-    print('[DEBUG]   jamMasukLembur="${record.jamMasukLembur}"');
-    print('[DEBUG]   jamKeluarLembur="${record.jamKeluarLembur}"');
+    if (kDebugMode) {
+      print('[DEBUG] processDailyAttendance: date=${record.date}, dept=${department.name}');
+      print('[DEBUG]   jamMasukPagi="${record.jamMasukPagi}"');
+      print('[DEBUG]   jamKeluarPagi="${record.jamKeluarPagi}"');
+      print('[DEBUG]   jamMasukSiang="${record.jamMasukSiang}"');
+      print('[DEBUG]   jamKeluarSiang="${record.jamKeluarSiang}"');
+      print('[DEBUG]   jamMasukLembur="${record.jamMasukLembur}"');
+      print('[DEBUG]   jamKeluarLembur="${record.jamKeluarLembur}"');
+    }
     
     int dailyMasuk = 0;
     int dailyTelat = 0;
@@ -103,8 +118,10 @@ class AttendanceService {
     final keluarSiang = parseTimeToMinutes(record.jamKeluarSiang);
     final keluarLembur = parseTimeToMinutes(record.jamKeluarLembur);
 
-    print('[DEBUG]   Parsed: masukPagi=$masukPagi, masukSiang=$masukSiang, masukLembur=$masukLembur');
-    print('[DEBUG]   Parsed: keluarPagi=$keluarPagi, keluarSiang=$keluarSiang, keluarLembur=$keluarLembur');
+    if (kDebugMode) {
+      print('[DEBUG]   Parsed: masukPagi=$masukPagi, masukSiang=$masukSiang, masukLembur=$masukLembur');
+      print('[DEBUG]   Parsed: keluarPagi=$keluarPagi, keluarSiang=$keluarSiang, keluarLembur=$keluarLembur');
+    }
 
     // Determine first check-in
     if (masukPagi != null) {
@@ -124,21 +141,29 @@ class AttendanceService {
       lastCheckOut = keluarPagi;
     }
 
-    print('[DEBUG]   firstCheckIn=$firstCheckIn, lastCheckOut=$lastCheckOut');
+    if (kDebugMode) {
+      print('[DEBUG]   firstCheckIn=$firstCheckIn, lastCheckOut=$lastCheckOut');
+    }
 
     // Calculate lateness if there's a check-in
     if (firstCheckIn != null) {
       dailyTelat = calculateLateness(firstCheckIn, department.jamMasuk);
-      print('[DEBUG]   dailyTelat=$dailyTelat minutes');
+      if (kDebugMode) {
+        print('[DEBUG]   dailyTelat=$dailyTelat minutes');
+      }
     }
 
     // Calculate work duration if there's both check-in and check-out
     if (firstCheckIn != null && lastCheckOut != null) {
       dailyMasuk = calculateWorkDuration(firstCheckIn, lastCheckOut, department.jamMasuk);
-      print('[DEBUG]   dailyMasuk=$dailyMasuk minutes');
+      if (kDebugMode) {
+        print('[DEBUG]   dailyMasuk=$dailyMasuk minutes');
+      }
     }
 
-    print('[DEBUG]   Result: masuk=$dailyMasuk, telat=$dailyTelat');
+    if (kDebugMode) {
+      print('[DEBUG]   Result: masuk=$dailyMasuk, telat=$dailyTelat');
+    }
     return {
       'masuk': dailyMasuk,
       'telat': dailyTelat,
@@ -152,7 +177,9 @@ class AttendanceService {
     Employee employee,
     List<AttendanceRecord> records,
   ) {
-    print('[DEBUG] calculateSummary: employee=${employee.name}, records=${records.length}');
+    if (kDebugMode) {
+      print('[DEBUG] calculateSummary: employee=${employee.name}, records=${records.length}');
+    }
     int totalMasuk = 0;
     int totalTelat = 0;
 
@@ -164,7 +191,9 @@ class AttendanceService {
       }
     }
 
-    print('[DEBUG] calculateSummary: FINAL totalMasuk=$totalMasuk, totalTelat=$totalTelat');
+    if (kDebugMode) {
+      print('[DEBUG] calculateSummary: FINAL totalMasuk=$totalMasuk, totalTelat=$totalTelat');
+    }
     return AttendanceSummary(
       employee: employee,
       totalMasukMinutes: totalMasuk,

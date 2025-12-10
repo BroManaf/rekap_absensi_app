@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:excel/excel.dart' hide Border, TextSpan;
@@ -502,15 +503,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
           // Skip if essential data is missing
           if (employeeName.isEmpty || userId.isEmpty) {
-            print('[DEBUG] Skipping sheet: employeeName=$employeeName, userId=$userId');
+            if (kDebugMode) {
+              print('[DEBUG] Skipping sheet: employeeName=$employeeName, userId=$userId');
+            }
             continue;
           }
 
-          print('[DEBUG] Processing employee: $employeeName (ID: $userId), department: $departmentStr');
+          if (kDebugMode) {
+            print('[DEBUG] Processing employee: $employeeName (ID: $userId), department: $departmentStr');
+          }
 
           // Create employee object
           final department = Department.fromString(departmentStr);
-          print('[DEBUG] Department parsed: ${department.name}, jamMasuk: ${department.jamMasuk}');
+          if (kDebugMode) {
+            print('[DEBUG] Department parsed: ${department.name}, jamMasuk: ${department.jamMasuk}');
+          }
           final employee = Employee(
             userId: userId,
             name: employeeName,
@@ -519,7 +526,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
           // Read attendance data from rows 12-42 (index 11-41) for dates 1-31
           List<AttendanceRecord> records = [];
-          print('[DEBUG] Reading attendance data for ${employee.name}');
+          if (kDebugMode) {
+            print('[DEBUG] Reading attendance data for ${employee.name}');
+          }
           for (int i = 11; i < 42 && i < sheet.rows.length; i++) {
             var row = sheet.rows[i];
             
@@ -572,7 +581,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             String? jamMasukLembur2 = _getCellValue(row, 9);
             String? jamKeluarLembur = _getCellValue(row, 10);
 
-            print('[DEBUG] Row ${i+1} (Day ${date.day}): C=$jamMasukPagi1, D=$jamMasukPagi2, E=$jamKeluarPagi, F=$jamMasukSiang1, G=$jamMasukSiang2, H=$jamKeluarSiang, I=$jamMasukLembur1, J=$jamMasukLembur2, K=$jamKeluarLembur');
+            if (kDebugMode) {
+              print('[DEBUG] Row ${i+1} (Day ${date.day}): C=$jamMasukPagi1, D=$jamMasukPagi2, E=$jamKeluarPagi, F=$jamMasukSiang1, G=$jamMasukSiang2, H=$jamKeluarSiang, I=$jamMasukLembur1, J=$jamMasukLembur2, K=$jamKeluarLembur');
+            }
 
             // Use first non-null value for masuk pagi
             String? jamMasukPagi = jamMasukPagi1 ?? jamMasukPagi2;
@@ -658,6 +669,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       }
       
       // If rawValue is a number between 0 and 1, it might be an Excel time
+      // Note: Excel times are in range [0, 1) where:
+      //   0.0 = 00:00 (midnight), 0.5 = 12:00 (noon), 0.99999 = 23:59:59
+      //   1.0 would represent next day midnight and is not a valid same-day time
       if (rawValue is num && rawValue >= 0 && rawValue < 1) {
         // Excel stores times as decimal values (0.0 to 1.0)
         // E.g., 0.40625 = 09:45 (9.75 hours / 24 hours)
@@ -665,7 +679,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         final hours = totalMinutes ~/ 60;
         final minutes = totalMinutes % 60;
         final timeString = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-        print('[DEBUG] _getCellValue col=$col: Converted Excel time $rawValue to $timeString');
+        if (kDebugMode) {
+          print('[DEBUG] _getCellValue col=$col: Converted Excel time $rawValue to $timeString');
+        }
         return timeString;
       }
       
@@ -673,7 +689,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       if (rawValue != null) {
         final stringValue = rawValue.toString().trim();
         if (stringValue.isNotEmpty) {
-          print('[DEBUG] _getCellValue col=$col: "$stringValue" (type: ${rawValue.runtimeType})');
+          if (kDebugMode) {
+            print('[DEBUG] _getCellValue col=$col: "$stringValue" (type: ${rawValue.runtimeType})');
+          }
           return stringValue;
         }
       }
