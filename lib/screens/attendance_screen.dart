@@ -519,6 +519,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             var row = sheet.rows[i];
             
             // Get date from columns C-G
+            // Note: Date is used only for record identification, not for calculations
+            // All calculations are based on time of day only
+            final now = DateTime.now();
             DateTime? date;
             for (int col = 2; col <= 6; col++) {
               if (row.length > col) {
@@ -529,7 +532,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     final value = cell.value.toString();
                     final dayOfMonth = int.tryParse(value);
                     if (dayOfMonth != null && dayOfMonth >= 1 && dayOfMonth <= 31) {
-                      date = DateTime(2024, 1, dayOfMonth); // Use a dummy year/month
+                      date = DateTime(now.year, now.month, dayOfMonth);
                     }
                   } catch (e) {
                     // Ignore parsing errors
@@ -540,8 +543,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             }
 
             if (date == null) {
-              // Use row index as day
-              date = DateTime(2024, 1, i - 10);
+              // Use row index as day (row 12 = day 1, row 13 = day 2, etc.)
+              date = DateTime(now.year, now.month, i - 10);
             }
 
             // Column mappings (0-indexed):
