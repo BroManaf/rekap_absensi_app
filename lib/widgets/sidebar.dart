@@ -48,8 +48,16 @@ class Sidebar extends StatelessWidget {
           
           // Menu Items
           _buildMenuItem(
-            icon: Icons.file_download_outlined,
+            icon: Icons.assessment_outlined,
             index: 0,
+            tooltip: 'Rekap Absensi',
+          ),
+          
+          const SizedBox(height: 8),
+          
+          _buildMenuItem(
+            icon: Icons.file_download_outlined,
+            index: 1,
             tooltip: 'Export Excel',
           ),
           
@@ -57,7 +65,7 @@ class Sidebar extends StatelessWidget {
           
           _buildMenuItem(
             icon: Icons.history_rounded,
-            index: 1,
+            index: 2,
             tooltip: 'Historis Absensi',
           ),
           
