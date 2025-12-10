@@ -636,46 +636,34 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       final cell = row[col]!;
       final cellValue = cell.value;
       
-      // Handle different cell value types from excel package
-      // The value can be TextCellValue, IntCellValue, DoubleCellValue, etc.
-      
-      // Try to get the underlying value
+      // Try to extract the actual value from the CellValue wrapper
       dynamic rawValue;
-      if (cellValue.runtimeType.toString().contains('TextCellValue')) {
-        // For TextCellValue, access the value property
+      
+      try {
+        // CellValue types have a 'value' property with the actual data
         rawValue = (cellValue as dynamic).value;
-      } else if (cellValue.runtimeType.toString().contains('IntCellValue')) {
-        rawValue = (cellValue as dynamic).value;
-      } else if (cellValue.runtimeType.toString().contains('DoubleCellValue')) {
-        final decimalValue = (cellValue as dynamic).value as num;
-        
-        // Excel stores times as decimal values (0.0 to 1.0)
-        // E.g., 0.40625 = 09:45 (9.75 hours / 24 hours)
-        // Check if this looks like a time value (between 0 and 1)
-        if (decimalValue >= 0 && decimalValue < 1) {
-          // Convert decimal to hours and minutes
-          final totalMinutes = (decimalValue * 24 * 60).round();
-          final hours = totalMinutes ~/ 60;
-          final minutes = totalMinutes % 60;
-          final timeString = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-          print('[DEBUG] _getCellValue col=$col: Converted Excel time $decimalValue to $timeString');
-          return timeString;
-        }
-        
-        rawValue = decimalValue;
-      } else {
-        // Fallback: try to access value property or convert to string
-        try {
-          rawValue = (cellValue as dynamic).value;
-        } catch (e) {
-          rawValue = cellValue;
-        }
+      } catch (e) {
+        // Fallback if we can't access the value property
+        rawValue = cellValue;
       }
       
+      // If rawValue is a number between 0 and 1, it might be an Excel time
+      if (rawValue is num && rawValue >= 0 && rawValue < 1) {
+        // Excel stores times as decimal values (0.0 to 1.0)
+        // E.g., 0.40625 = 09:45 (9.75 hours / 24 hours)
+        final totalMinutes = (rawValue * 24 * 60).round();
+        final hours = totalMinutes ~/ 60;
+        final minutes = totalMinutes % 60;
+        final timeString = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+        print('[DEBUG] _getCellValue col=$col: Converted Excel time $rawValue to $timeString');
+        return timeString;
+      }
+      
+      // For other values (strings, integers, etc.), convert to string
       if (rawValue != null) {
         final stringValue = rawValue.toString().trim();
         if (stringValue.isNotEmpty) {
-          print('[DEBUG] _getCellValue col=$col: $stringValue (type: ${cellValue.runtimeType})');
+          print('[DEBUG] _getCellValue col=$col: "$stringValue" (type: ${rawValue.runtimeType})');
           return stringValue;
         }
       }
