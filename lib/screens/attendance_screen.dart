@@ -631,6 +631,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
+  /// Extract cell value and convert Excel time formats to HH:MM strings
+  /// 
+  /// Excel stores times as decimal values (0.0 to 1.0), e.g., 0.40625 = 09:45
+  /// This method detects and converts such values to "HH:MM" format.
+  /// 
+  /// Note: Using dynamic casting because Excel package cell value types
+  /// are not directly accessible/importable.
+  /// 
+  /// TODO: Remove debug logging after validating the fix with actual Excel data
   String? _getCellValue(List<Data?> row, int col) {
     if (row.length > col && row[col] != null && row[col]!.value != null) {
       final cell = row[col]!;
@@ -644,6 +653,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         rawValue = (cellValue as dynamic).value;
       } catch (e) {
         // Fallback if we can't access the value property
+        // This shouldn't happen with the Excel package but included for safety
         rawValue = cellValue;
       }
       

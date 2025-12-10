@@ -6,6 +6,8 @@ import '../models/attendance_summary.dart';
 
 class AttendanceService {
   /// Parse time string (HH:MM or H:MM) to minutes since midnight
+  /// 
+  /// TODO: Remove debug logging after validating the fix with actual Excel data
   static int? parseTimeToMinutes(String? timeStr) {
     if (timeStr == null || timeStr.trim().isEmpty) {
       print('[DEBUG] parseTimeToMinutes: null or empty input');
@@ -70,6 +72,8 @@ class AttendanceService {
   }
 
   /// Process a single day's attendance record
+  /// 
+  /// TODO: Remove debug logging after validating the fix with actual Excel data
   static Map<String, int> processDailyAttendance(
     AttendanceRecord record,
     Department department,
@@ -142,6 +146,8 @@ class AttendanceService {
   }
 
   /// Calculate attendance summary for an employee across all records
+  /// 
+  /// TODO: Remove debug logging after validating the fix with actual Excel data
   static AttendanceSummary calculateSummary(
     Employee employee,
     List<AttendanceRecord> records,
