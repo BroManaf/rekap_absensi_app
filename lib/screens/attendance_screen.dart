@@ -502,11 +502,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
           // Skip if essential data is missing
           if (employeeName.isEmpty || userId.isEmpty) {
+            print('[DEBUG] Skipping sheet: employeeName=$employeeName, userId=$userId');
             continue;
           }
 
+          print('[DEBUG] Processing employee: $employeeName (ID: $userId), department: $departmentStr');
+
           // Create employee object
           final department = Department.fromString(departmentStr);
+          print('[DEBUG] Department parsed: ${department.name}, jamMasuk: ${department.jamMasuk}');
           final employee = Employee(
             userId: userId,
             name: employeeName,
@@ -515,6 +519,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
           // Read attendance data from rows 12-42 (index 11-41) for dates 1-31
           List<AttendanceRecord> records = [];
+          print('[DEBUG] Reading attendance data for ${employee.name}');
           for (int i = 11; i < 42 && i < sheet.rows.length; i++) {
             var row = sheet.rows[i];
             
@@ -566,6 +571,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             String? jamMasukLembur1 = _getCellValue(row, 8);
             String? jamMasukLembur2 = _getCellValue(row, 9);
             String? jamKeluarLembur = _getCellValue(row, 10);
+
+            print('[DEBUG] Row ${i+1} (Day ${date.day}): C=$jamMasukPagi1, D=$jamMasukPagi2, E=$jamKeluarPagi, F=$jamMasukSiang1, G=$jamMasukSiang2, H=$jamKeluarSiang, I=$jamMasukLembur1, J=$jamMasukLembur2, K=$jamKeluarLembur');
 
             // Use first non-null value for masuk pagi
             String? jamMasukPagi = jamMasukPagi1 ?? jamMasukPagi2;
@@ -626,8 +633,52 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   String? _getCellValue(List<Data?> row, int col) {
     if (row.length > col && row[col] != null && row[col]!.value != null) {
-      final value = row[col]!.value.toString().trim();
-      return value.isEmpty ? null : value;
+      final cell = row[col]!;
+      final cellValue = cell.value;
+      
+      // Handle different cell value types from excel package
+      // The value can be TextCellValue, IntCellValue, DoubleCellValue, etc.
+      
+      // Try to get the underlying value
+      dynamic rawValue;
+      if (cellValue.runtimeType.toString().contains('TextCellValue')) {
+        // For TextCellValue, access the value property
+        rawValue = (cellValue as dynamic).value;
+      } else if (cellValue.runtimeType.toString().contains('IntCellValue')) {
+        rawValue = (cellValue as dynamic).value;
+      } else if (cellValue.runtimeType.toString().contains('DoubleCellValue')) {
+        final decimalValue = (cellValue as dynamic).value as num;
+        
+        // Excel stores times as decimal values (0.0 to 1.0)
+        // E.g., 0.40625 = 09:45 (9.75 hours / 24 hours)
+        // Check if this looks like a time value (between 0 and 1)
+        if (decimalValue >= 0 && decimalValue < 1) {
+          // Convert decimal to hours and minutes
+          final totalMinutes = (decimalValue * 24 * 60).round();
+          final hours = totalMinutes ~/ 60;
+          final minutes = totalMinutes % 60;
+          final timeString = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+          print('[DEBUG] _getCellValue col=$col: Converted Excel time $decimalValue to $timeString');
+          return timeString;
+        }
+        
+        rawValue = decimalValue;
+      } else {
+        // Fallback: try to access value property or convert to string
+        try {
+          rawValue = (cellValue as dynamic).value;
+        } catch (e) {
+          rawValue = cellValue;
+        }
+      }
+      
+      if (rawValue != null) {
+        final stringValue = rawValue.toString().trim();
+        if (stringValue.isNotEmpty) {
+          print('[DEBUG] _getCellValue col=$col: $stringValue (type: ${cellValue.runtimeType})');
+          return stringValue;
+        }
+      }
     }
     return null;
   }
