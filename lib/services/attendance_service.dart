@@ -62,39 +62,46 @@ class AttendanceService {
     int dailyMasuk = 0;
     int dailyTelat = 0;
 
-    // Process morning shift (07:00 - 12:00)
-    if (record.jamMasukPagi != null && record.jamKeluarPagi != null) {
-      final masukPagi = parseTimeToMinutes(record.jamMasukPagi);
-      final keluarPagi = parseTimeToMinutes(record.jamKeluarPagi);
-      
-      if (masukPagi != null && keluarPagi != null) {
-        dailyTelat += calculateLateness(masukPagi, department.jamMasuk);
-        dailyMasuk += calculateWorkDuration(masukPagi, keluarPagi, department.jamMasuk);
-      }
+    // Find first check-in and last check-out for the day
+    int? firstCheckIn;
+    int? lastCheckOut;
+
+    // Collect all check-in times
+    final masukPagi = parseTimeToMinutes(record.jamMasukPagi);
+    final masukSiang = parseTimeToMinutes(record.jamMasukSiang);
+    final masukLembur = parseTimeToMinutes(record.jamMasukLembur);
+
+    // Collect all check-out times
+    final keluarPagi = parseTimeToMinutes(record.jamKeluarPagi);
+    final keluarSiang = parseTimeToMinutes(record.jamKeluarSiang);
+    final keluarLembur = parseTimeToMinutes(record.jamKeluarLembur);
+
+    // Determine first check-in
+    if (masukPagi != null) {
+      firstCheckIn = masukPagi;
+    } else if (masukSiang != null) {
+      firstCheckIn = masukSiang;
+    } else if (masukLembur != null) {
+      firstCheckIn = masukLembur;
     }
 
-    // Process afternoon shift (12:01 - 18:00)
-    if (record.jamMasukSiang != null && record.jamKeluarSiang != null) {
-      final masukSiang = parseTimeToMinutes(record.jamMasukSiang);
-      final keluarSiang = parseTimeToMinutes(record.jamKeluarSiang);
-      
-      if (masukSiang != null && keluarSiang != null) {
-        // For afternoon shift, if it's the first check-in, calculate lateness
-        if (record.jamMasukPagi == null) {
-          dailyTelat += calculateLateness(masukSiang, department.jamMasuk);
-        }
-        dailyMasuk += keluarSiang - masukSiang;
-      }
+    // Determine last check-out
+    if (keluarLembur != null) {
+      lastCheckOut = keluarLembur;
+    } else if (keluarSiang != null) {
+      lastCheckOut = keluarSiang;
+    } else if (keluarPagi != null) {
+      lastCheckOut = keluarPagi;
     }
 
-    // Process overtime shift (18:01 - 23:59)
-    if (record.jamMasukLembur != null && record.jamKeluarLembur != null) {
-      final masukLembur = parseTimeToMinutes(record.jamMasukLembur);
-      final keluarLembur = parseTimeToMinutes(record.jamKeluarLembur);
-      
-      if (masukLembur != null && keluarLembur != null) {
-        dailyMasuk += keluarLembur - masukLembur;
-      }
+    // Calculate lateness if there's a check-in
+    if (firstCheckIn != null) {
+      dailyTelat = calculateLateness(firstCheckIn, department.jamMasuk);
+    }
+
+    // Calculate work duration if there's both check-in and check-out
+    if (firstCheckIn != null && lastCheckOut != null) {
+      dailyMasuk = calculateWorkDuration(firstCheckIn, lastCheckOut, department.jamMasuk);
     }
 
     return {
