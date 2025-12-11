@@ -43,7 +43,7 @@ class HistorisAbsensiScreen extends StatelessWidget {
                     Text(
                       'Lihat riwayat data absensi karyawan',
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: Colors.grey.shade600,
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
                       ),
@@ -92,7 +92,7 @@ class HistorisAbsensiScreen extends StatelessWidget {
                       'Konten Historis',
                       style: TextStyle(
                         fontSize: 20,
-                        color: Colors.grey[800],
+                        color: Colors.grey.shade800,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -101,7 +101,7 @@ class HistorisAbsensiScreen extends StatelessWidget {
                       'Area ini akan diisi dengan data historis absensi',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[500],
+                        color: Colors.grey.shade500,
                       ),
                     ),
                   ],

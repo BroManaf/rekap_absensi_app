@@ -63,7 +63,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     Text(
                       'Upload file Excel untuk melihat rekap kehadiran',
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: Colors.grey.shade600,
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
                       ),
@@ -154,7 +154,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[800],
+                                color: Colors.grey.shade800,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -165,7 +165,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   'atau ',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey[600],
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
                                 InkWell(
@@ -187,7 +187,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               'Format file: .xlsx atau .xls',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey[500],
+                                color: Colors.grey.shade500,
                               ),
                             ),
                           ],
@@ -225,7 +225,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w700,
-                                      color: Colors.grey[900],
+                                      color: Colors.grey.shade900,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -234,7 +234,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       _currentFileName!,
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.grey[500],
+                                        color: Colors.grey.shade500,
                                       ),
                                     ),
                                 ],
@@ -303,7 +303,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           Text(
                             'Memproses file Excel...',
                             style: TextStyle(
-                              color: Colors.grey[600],
+                              color: Colors.grey.shade600,
                               fontSize: 14,
                             ),
                           ),
@@ -377,7 +377,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: Colors.grey[900],
+                        color: Colors.grey.shade900,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -399,7 +399,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           child: Text(
                             summary.employee.userId,
                             style: TextStyle(
-                              color: Colors.grey[700],
+                              color: Colors.grey.shade700,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -487,7 +487,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               Text(
                 value,
                 style: TextStyle(
-                  color: Colors.grey[900],
+                  color: Colors.grey.shade900,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -498,7 +498,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           Text(
             label,
             style: TextStyle(
-              color: Colors.grey[500],
+              color: Colors.grey.shade500,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
@@ -700,7 +700,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
-                color: Colors.grey[800],
+                color: Colors.grey.shade800,
               ),
             ),
           ),
@@ -710,7 +710,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               time,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey[600],
+                color: Colors.grey.shade600,
               ),
             ),
           ),
@@ -749,7 +749,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           Text(
             message,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: Colors.grey.shade600,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -791,7 +791,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
-                    color: Colors.grey[800],
+                    color: Colors.grey.shade800,
                   ),
                 ),
               ),
@@ -809,7 +809,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
             decoration: InputDecoration(
               hintText: 'Keterangan (Sakit/Izin)',
-              hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+              hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade400),
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -826,7 +826,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 borderSide: const BorderSide(color: Color(0xFF6B7FFF), width: 2),
               ),
             ),
-            style: TextStyle(fontSize: 13, color: Colors.grey[800]),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
             onChanged: (value) {
               record.notes = value;
             },
