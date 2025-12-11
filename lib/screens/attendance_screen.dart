@@ -488,168 +488,59 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       List<AttendanceSummary> summaries = [];
 
-      // Process each sheet (assuming each sheet is one employee)
+      // Define column mappings for each employee position in a sheet
+      // Each sheet can have up to 3 employees
+      final employeeColumnMappings = [
+        // Employee 1
+        {
+          'deptCols': [2, 3, 4, 5, 6], // C-G
+          'nameCols': [8, 9, 10], // I-K
+          'userIdCols': [8, 9, 10], // I-K (row 3)
+          'jamMasukPagi': [2, 3], // C, D
+          'jamKeluarPagi': 4, // E
+          'jamMasukSiang': [5, 6], // F, G
+          'jamKeluarSiang': 7, // H
+          'jamMasukLembur': [8, 9], // I, J
+          'jamKeluarLembur': 10, // K
+        },
+        // Employee 2
+        {
+          'deptCols': [13, 14, 15, 16, 17], // N-R
+          'nameCols': [19, 20, 21], // T-V
+          'userIdCols': [19, 20, 21], // T-V (row 3)
+          'jamMasukPagi': [13, 14], // N, O
+          'jamKeluarPagi': 15, // P
+          'jamMasukSiang': [16, 17], // Q, R
+          'jamKeluarSiang': 18, // S
+          'jamMasukLembur': [19, 20], // T, U
+          'jamKeluarLembur': 21, // V
+        },
+        // Employee 3
+        {
+          'deptCols': [24, 25, 26, 27, 28], // Y-AC
+          'nameCols': [30, 31, 32], // AE-AG
+          'userIdCols': [30, 31, 32], // AE-AG (row 3)
+          'jamMasukPagi': [24, 25], // Y, Z
+          'jamKeluarPagi': 26, // AA
+          'jamMasukSiang': [27, 28], // AB, AC
+          'jamKeluarSiang': 29, // AD
+          'jamMasukLembur': [30, 31], // AE, AF
+          'jamKeluarLembur': 32, // AG
+        },
+      ];
+
+      // Process each sheet
       for (var tableName in excel.tables.keys) {
         var sheet = excel.tables[tableName];
 
         if (sheet != null && sheet.rows.isNotEmpty) {
-          // Read department from row 2 (index 1), columns C-G (index 2-6)
-          String departmentStr = '';
-          for (int col = 2; col <= 6; col++) {
-            if (sheet.rows.length > 1 && sheet.rows[1].length > col) {
-              var cell = sheet.rows[1][col];
-              if (cell != null && cell.value != null) {
-                departmentStr = cell.value.toString();
-                break;
-              }
+          // Process each employee position in the sheet
+          for (var empMapping in employeeColumnMappings) {
+            final employeeSummary = _processEmployee(sheet, empMapping);
+            if (employeeSummary != null) {
+              summaries.add(employeeSummary);
             }
           }
-
-          // Read employee name from row 2 (index 1), columns I-K (index 8-10)
-          String employeeName = '';
-          for (int col = 8; col <= 10; col++) {
-            if (sheet.rows.length > 1 && sheet.rows[1].length > col) {
-              var cell = sheet.rows[1][col];
-              if (cell != null && cell.value != null) {
-                employeeName = cell.value.toString();
-                break;
-              }
-            }
-          }
-
-          // Read UserID from row 3 (index 2), columns I-K (index 8-10)
-          String userId = '';
-          for (int col = 8; col <= 10; col++) {
-            if (sheet.rows.length > 2 && sheet.rows[2].length > col) {
-              var cell = sheet.rows[2][col];
-              if (cell != null && cell.value != null) {
-                userId = cell.value.toString();
-                break;
-              }
-            }
-          }
-
-          // Skip if essential data is missing
-          if (employeeName.isEmpty || userId.isEmpty) {
-            if (kDebugMode) {
-              print('[DEBUG] Skipping sheet: employeeName=$employeeName, userId=$userId');
-            }
-            continue;
-          }
-
-          if (kDebugMode) {
-            print('[DEBUG] Processing employee: $employeeName (ID: $userId), department: $departmentStr');
-          }
-
-          // Create employee object
-          final department = Department.fromString(departmentStr);
-          if (kDebugMode) {
-            print('[DEBUG] Department parsed: ${department.name}, jamMasuk: ${department.jamMasuk}');
-          }
-          final employee = Employee(
-            userId: userId,
-            name: employeeName,
-            department: department,
-          );
-
-          // Read attendance data from rows 12-42 (index 11-41) for dates 1-31
-          List<AttendanceRecord> records = [];
-          if (kDebugMode) {
-            print('[DEBUG] Reading attendance data for ${employee.name}');
-          }
-          for (int i = 11; i < 42 && i < sheet.rows.length; i++) {
-            var row = sheet.rows[i];
-            
-            // Read day of week from column B (index 1)
-            // Format: "dd Sen", "dd Sel", "dd Rab", "dd Kam", "dd Jum", "dd Sab", "dd Min"
-            String? dayOfWeek;
-            if (row.length > 1 && row[1] != null && row[1]!.value != null) {
-              final cellValue = row[1]!.value.toString().trim();
-              // Extract day abbreviation (last 3 characters after space)
-              // Examples: "1 Sen" -> "Sen", "15 Min" -> "Min"
-              final parts = cellValue.split(' ');
-              if (parts.length >= 2) {
-                dayOfWeek = parts.last; // Sen, Sel, Rab, Kam, Jum, Sab, Min
-              }
-            }
-            
-            // Get date from columns C-G
-            // Note: Date is used only for record identification, not for calculations
-            // All calculations are based on time of day only
-            // We use a fixed reference date to avoid issues with month boundaries
-            const referenceYear = 2024;
-            const referenceMonth = 1; // January has 31 days
-            DateTime? date;
-            for (int col = 2; col <= 6; col++) {
-              if (row.length > col) {
-                var cell = row[col];
-                if (cell != null && cell.value != null) {
-                  try {
-                    // Try to parse as date or number (day of month)
-                    final value = cell.value.toString();
-                    final dayOfMonth = int.tryParse(value);
-                    if (dayOfMonth != null && dayOfMonth >= 1 && dayOfMonth <= 31) {
-                      date = DateTime(referenceYear, referenceMonth, dayOfMonth);
-                    }
-                  } catch (e) {
-                    // Ignore parsing errors
-                  }
-                  break;
-                }
-              }
-            }
-
-            if (date == null) {
-              // Use row index as day (row 12 = day 1, row 13 = day 2, etc.)
-              final dayNumber = i - 10;
-              if (dayNumber >= 1 && dayNumber <= 31) {
-                date = DateTime(referenceYear, referenceMonth, dayNumber);
-              } else {
-                // Fallback for invalid row numbers
-                date = DateTime(referenceYear, referenceMonth, 1);
-              }
-            }
-
-            if (kDebugMode && dayOfWeek != null) {
-              print('[DEBUG] Row ${i+1} (Day ${date.day}): dayOfWeek=$dayOfWeek');
-            }
-
-            // Column mappings (0-indexed):
-            // C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10
-            String? jamMasukPagi1 = _getCellValue(row, 2);
-            String? jamMasukPagi2 = _getCellValue(row, 3);
-            String? jamKeluarPagi = _getCellValue(row, 4);
-            String? jamMasukSiang1 = _getCellValue(row, 5);
-            String? jamMasukSiang2 = _getCellValue(row, 6);
-            String? jamKeluarSiang = _getCellValue(row, 7);
-            String? jamMasukLembur1 = _getCellValue(row, 8);
-            String? jamMasukLembur2 = _getCellValue(row, 9);
-            String? jamKeluarLembur = _getCellValue(row, 10);
-
-            if (kDebugMode) {
-              print('[DEBUG] Row ${i+1} (Day ${date.day}): C=$jamMasukPagi1, D=$jamMasukPagi2, E=$jamKeluarPagi, F=$jamMasukSiang1, G=$jamMasukSiang2, H=$jamKeluarSiang, I=$jamMasukLembur1, J=$jamMasukLembur2, K=$jamKeluarLembur');
-            }
-
-            // Use first non-null value for masuk pagi
-            String? jamMasukPagi = jamMasukPagi1 ?? jamMasukPagi2;
-            String? jamMasukSiang = jamMasukSiang1 ?? jamMasukSiang2;
-            String? jamMasukLembur = jamMasukLembur1 ?? jamMasukLembur2;
-
-            records.add(AttendanceRecord(
-              date: date,
-              dayOfWeek: dayOfWeek,
-              jamMasukPagi: jamMasukPagi,
-              jamKeluarPagi: jamKeluarPagi,
-              jamMasukSiang: jamMasukSiang,
-              jamKeluarSiang: jamKeluarSiang,
-              jamMasukLembur: jamMasukLembur,
-              jamKeluarLembur: jamKeluarLembur,
-            ));
-          }
-
-          // Calculate summary
-          final summary = AttendanceService.calculateSummary(employee, records);
-          summaries.add(summary);
         }
       }
 
@@ -686,6 +577,162 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         _isProcessing = false;
       });
     }
+  }
+
+  /// Process a single employee from the sheet using the provided column mappings
+  AttendanceSummary? _processEmployee(Sheet sheet, Map<String, dynamic> mapping) {
+    // Read department from row 2 (index 1)
+    String departmentStr = '';
+    for (int col in mapping['deptCols']) {
+      if (sheet.rows.length > 1 && sheet.rows[1].length > col) {
+        var cell = sheet.rows[1][col];
+        if (cell != null && cell.value != null) {
+          departmentStr = cell.value.toString();
+          break;
+        }
+      }
+    }
+
+    // Read employee name from row 2 (index 1)
+    String employeeName = '';
+    for (int col in mapping['nameCols']) {
+      if (sheet.rows.length > 1 && sheet.rows[1].length > col) {
+        var cell = sheet.rows[1][col];
+        if (cell != null && cell.value != null) {
+          employeeName = cell.value.toString();
+          break;
+        }
+      }
+    }
+
+    // Read UserID from row 3 (index 2)
+    String userId = '';
+    for (int col in mapping['userIdCols']) {
+      if (sheet.rows.length > 2 && sheet.rows[2].length > col) {
+        var cell = sheet.rows[2][col];
+        if (cell != null && cell.value != null) {
+          userId = cell.value.toString();
+          break;
+        }
+      }
+    }
+
+    // Skip if essential data is missing
+    if (employeeName.isEmpty || userId.isEmpty) {
+      if (kDebugMode) {
+        print('[DEBUG] Skipping employee: employeeName=$employeeName, userId=$userId');
+      }
+      return null;
+    }
+
+    if (kDebugMode) {
+      print('[DEBUG] Processing employee: $employeeName (ID: $userId), department: $departmentStr');
+    }
+
+    // Create employee object
+    final department = Department.fromString(departmentStr);
+    if (kDebugMode) {
+      print('[DEBUG] Department parsed: ${department.name}, jamMasuk: ${department.jamMasuk}');
+    }
+    final employee = Employee(
+      userId: userId,
+      name: employeeName,
+      department: department,
+    );
+
+    // Read attendance data from rows 12-42 (index 11-41) for dates 1-31
+    List<AttendanceRecord> records = [];
+    if (kDebugMode) {
+      print('[DEBUG] Reading attendance data for ${employee.name}');
+    }
+    for (int i = 11; i < 42 && i < sheet.rows.length; i++) {
+      var row = sheet.rows[i];
+      
+      // Read day of week from column B (index 1)
+      // Format: "dd Sen", "dd Sel", "dd Rab", "dd Kam", "dd Jum", "dd Sab", "dd Min"
+      String? dayOfWeek;
+      if (row.length > 1 && row[1] != null && row[1]!.value != null) {
+        final cellValue = row[1]!.value.toString().trim();
+        // Extract day abbreviation (last 3 characters after space)
+        // Examples: "1 Sen" -> "Sen", "15 Min" -> "Min"
+        final parts = cellValue.split(' ');
+        if (parts.length >= 2) {
+          dayOfWeek = parts.last; // Sen, Sel, Rab, Kam, Jum, Sab, Min
+        }
+      }
+      
+      // Get date from columns C-G (always use employee 1's date columns)
+      // Note: Date is used only for record identification, not for calculations
+      // All calculations are based on time of day only
+      // We use a fixed reference date to avoid issues with month boundaries
+      const referenceYear = 2024;
+      const referenceMonth = 1; // January has 31 days
+      DateTime? date;
+      for (int col = 2; col <= 6; col++) {
+        if (row.length > col) {
+          var cell = row[col];
+          if (cell != null && cell.value != null) {
+            try {
+              // Try to parse as date or number (day of month)
+              final value = cell.value.toString();
+              final dayOfMonth = int.tryParse(value);
+              if (dayOfMonth != null && dayOfMonth >= 1 && dayOfMonth <= 31) {
+                date = DateTime(referenceYear, referenceMonth, dayOfMonth);
+              }
+            } catch (e) {
+              // Ignore parsing errors
+            }
+            break;
+          }
+        }
+      }
+
+      if (date == null) {
+        // Use row index as day (row 12 = day 1, row 13 = day 2, etc.)
+        final dayNumber = i - 10;
+        if (dayNumber >= 1 && dayNumber <= 31) {
+          date = DateTime(referenceYear, referenceMonth, dayNumber);
+        } else {
+          // Fallback for invalid row numbers
+          date = DateTime(referenceYear, referenceMonth, 1);
+        }
+      }
+
+      if (kDebugMode && dayOfWeek != null) {
+        print('[DEBUG] Row ${i+1} (Day ${date.day}): dayOfWeek=$dayOfWeek');
+      }
+
+      // Extract time data using the mapping
+      String? jamMasukPagi1 = _getCellValue(row, mapping['jamMasukPagi'][0]);
+      String? jamMasukPagi2 = _getCellValue(row, mapping['jamMasukPagi'][1]);
+      String? jamKeluarPagi = _getCellValue(row, mapping['jamKeluarPagi']);
+      String? jamMasukSiang1 = _getCellValue(row, mapping['jamMasukSiang'][0]);
+      String? jamMasukSiang2 = _getCellValue(row, mapping['jamMasukSiang'][1]);
+      String? jamKeluarSiang = _getCellValue(row, mapping['jamKeluarSiang']);
+      String? jamMasukLembur1 = _getCellValue(row, mapping['jamMasukLembur'][0]);
+      String? jamMasukLembur2 = _getCellValue(row, mapping['jamMasukLembur'][1]);
+      String? jamKeluarLembur = _getCellValue(row, mapping['jamKeluarLembur']);
+
+      // Use first non-null value for masuk pagi
+      String? jamMasukPagi = jamMasukPagi1 ?? jamMasukPagi2;
+      String? jamMasukSiang = jamMasukSiang1 ?? jamMasukSiang2;
+      String? jamMasukLembur = jamMasukLembur1 ?? jamMasukLembur2;
+
+      records.add(AttendanceRecord(
+        date: date,
+        dayOfWeek: dayOfWeek,
+        jamMasukPagi: jamMasukPagi,
+        jamKeluarPagi: jamKeluarPagi,
+        jamMasukSiang: jamMasukSiang,
+        jamKeluarSiang: jamKeluarSiang,
+        jamMasukLembur: jamMasukLembur,
+        jamKeluarLembur: jamKeluarLembur,
+      ));
+    }
+
+    // Calculate summary
+    final summary = AttendanceService.calculateSummary(employee, records);
+    return summary;
   }
 
   /// Extract cell value and convert Excel time formats to HH:MM strings
