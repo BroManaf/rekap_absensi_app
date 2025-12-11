@@ -700,19 +700,20 @@ class _ExportExcelScreenState extends State<ExportExcelScreen> {
             }
           }
           
-          // Skip header (row 0) dan mulai dari row 1
+          // Skip header (row 0) and start from row 1
           for (var i = 1; i < sheet. rows.length; i++) {
             var row = sheet.rows[i];
             rowsProcessed++;
             
+            // Check if row has minimum required columns (A-E, indices 0-4)
             if (row.length >= 5) {
-              // Kolom B=1, C=2, D=3, E=4 (index dimulai dari 0)
+              // Columns B=1, C=2, D=3, E=4 (index starts from 0)
               var nama = row[1]?.value?.toString() ?? '';
               var kampus = row[2]?.value?.toString() ?? '';
               var alamat = row[3]?.value?.toString() ??  '';
               var kekayaan = row[4]?.value?. toString() ?? '';
 
-              // Skip jika semua data kosong
+              // Skip if all data is empty
               if (nama.isEmpty && kampus.isEmpty && alamat. isEmpty && kekayaan.isEmpty) {
                 continue;
               }
@@ -765,7 +766,7 @@ class _ExportExcelScreenState extends State<ExportExcelScreen> {
                 _uploadedFiles.add(ExcelData(
                   fileName: filePath. split('/').last. split('\\').last,
                   sheetName: tableName,
-                  rowNumber: i + 1, // +1 karena index dimulai dari 0
+                  rowNumber: i + 1, // +1 because index starts from 0
                   nama: nama,
                   kampus: kampus,
                   alamat: alamat,

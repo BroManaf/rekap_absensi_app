@@ -40,7 +40,7 @@ class AttendanceResult {
 /// Parameters:
 /// - [masukPagi]: Morning entry time (required)
 /// - [keluarSiang]: Afternoon exit time (optional)
-/// - [masukLembur]: Overtime entry time, treated as final exit (optional)
+/// - [masukLembur]: Final exit time during overtime period (optional)
 /// - [shiftStart]: Shift start time (default: 07:00)
 /// - [regularEnd]: Regular work end time (default: 16:00)
 /// - [overtimeStart]: Overtime start time (default: 17:01)
