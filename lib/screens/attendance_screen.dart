@@ -869,15 +869,25 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         var cell = sheet.rows[2][col];
         if (cell != null && cell.value != null) {
           try {
-            // Try to parse as DateTime
-            final value = cell.value;
+            // Extract the actual value from CellValue wrapper
+            final cellValue = cell.value;
+            dynamic rawValue;
+            
+            try {
+              // CellValue types have a 'value' property with the actual data
+              rawValue = (cellValue as dynamic).value;
+            } catch (e) {
+              // Fallback if we can't access the value property
+              rawValue = cellValue;
+            }
+            
             DateTime? parsedDate;
             
-            if (value is DateTime) {
-              parsedDate = value;
-            } else {
+            if (rawValue is DateTime) {
+              parsedDate = rawValue;
+            } else if (rawValue != null) {
               // Try parsing string as date
-              final valueStr = value.toString();
+              final valueStr = rawValue.toString();
               // Try various date formats
               try {
                 parsedDate = DateTime.parse(valueStr);
