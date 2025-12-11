@@ -132,6 +132,7 @@ class AttendanceService {
   /// - jamKeluarLembur is no longer used in calculations
   /// - Overtime starts from 17:01 onwards
   /// - Returns separate values for regular work time and overtime
+  /// - SUNDAY (Min) SPECIAL LOGIC: All hours count as overtime, no regular hours, no lateness
   /// 
   /// TODO: Remove debug logging after validating the fix with actual Excel data
   static Map<String, int> processDailyAttendance(
@@ -139,7 +140,7 @@ class AttendanceService {
     Department department,
   ) {
     if (kDebugMode) {
-      print('[DEBUG] processDailyAttendance: date=${record.date}, dept=${department.name}');
+      print('[DEBUG] processDailyAttendance: date=${record.date}, dept=${department.name}, dayOfWeek=${record.dayOfWeek}');
       print('[DEBUG]   jamMasukPagi="${record.jamMasukPagi}"');
       print('[DEBUG]   jamKeluarPagi="${record.jamKeluarPagi}"');
       print('[DEBUG]   jamMasukSiang="${record.jamMasukSiang}"');
@@ -193,6 +194,70 @@ class AttendanceService {
       print('[DEBUG]   firstCheckIn=$firstCheckIn, lastCheckOut=$lastCheckOut');
     }
 
+    // SUNDAY SPECIAL LOGIC: All hours count as overtime
+    if (record.isSunday) {
+      if (kDebugMode) {
+        print('[DEBUG]   SUNDAY DETECTED - All hours count as overtime');
+      }
+      
+      if (firstCheckIn != null && lastCheckOut != null) {
+        // If employee arrives before department time, start counting from department time
+        final effectiveStart = firstCheckIn < department.jamMasuk.toMinutes() 
+            ? department.jamMasuk.toMinutes() 
+            : firstCheckIn;
+        
+        // Calculate overtime with 16:00 boundary and gap rules
+        const afternoonEndMinutes = 16 * 60; // 16:00 = 960 minutes
+        const overtimeStartMinutes = 17 * 60 + 1; // 17:01 = 1021 minutes
+        
+        // Case 1: Checkout before or at 16:00 - all hours are overtime
+        if (lastCheckOut <= afternoonEndMinutes) {
+          if (lastCheckOut > effectiveStart) {
+            dailyLembur = lastCheckOut - effectiveStart;
+          }
+        }
+        // Case 2: Checkout between 16:00 and 17:01 - count up to 16:00 as overtime
+        else if (lastCheckOut > afternoonEndMinutes && lastCheckOut < overtimeStartMinutes) {
+          if (afternoonEndMinutes > effectiveStart) {
+            dailyLembur = afternoonEndMinutes - effectiveStart;
+          }
+        }
+        // Case 3: Checkout at or after 17:01 - split calculation
+        else {
+          // First part: effectiveStart to 16:00 as overtime
+          int firstPart = 0;
+          if (afternoonEndMinutes > effectiveStart) {
+            firstPart = afternoonEndMinutes - effectiveStart;
+          }
+          
+          // Second part: 17:00 to checkOut as overtime
+          const overtimeBase = 17 * 60; // 17:00 = 1020 minutes
+          int secondPart = 0;
+          if (lastCheckOut >= overtimeStartMinutes) {
+            secondPart = lastCheckOut - overtimeBase;
+          }
+          
+          dailyLembur = firstPart + secondPart;
+        }
+        
+        if (kDebugMode) {
+          print('[DEBUG]   SUNDAY: dailyLembur=$dailyLembur minutes (all hours as overtime)');
+        }
+      }
+      
+      // No regular work hours, no lateness on Sunday
+      dailyMasuk = 0;
+      dailyTelat = 0;
+      
+      return {
+        'masuk': dailyMasuk,
+        'telat': dailyTelat,
+        'lembur': dailyLembur,
+      };
+    }
+
+    // REGULAR DAY LOGIC (Monday-Saturday, excluding Sunday)
+    
     // Calculate lateness if there's a check-in
     if (firstCheckIn != null) {
       dailyTelat = calculateLateness(firstCheckIn, department.jamMasuk);

@@ -326,5 +326,106 @@ void main() {
       expect(intern.jamMasuk.hour, equals(9));
       expect(intern.jamMasuk.minute, equals(0));
     });
+
+    test('Process daily attendance - Sunday (Min) simple case', () {
+      // Sunday: All hours count as overtime
+      // Quarry employee: clock in at 09:00, clock out at 16:00
+      // Expected: Total Masuk = 0, Total Telat = 0, Total Lembur = 7 hours (420 min)
+      final department = Department.fromString('Quarry');
+      final record = AttendanceRecord(
+        date: DateTime(2024, 1, 7), // Sunday
+        dayOfWeek: 'Min',
+        jamMasukPagi: '09:00',
+        jamKeluarSiang: '16:00',
+      );
+
+      final result = AttendanceService.processDailyAttendance(record, department);
+
+      expect(result['telat'], equals(0)); // No lateness on Sunday
+      expect(result['masuk'], equals(0)); // No regular hours on Sunday
+      expect(result['lembur'], equals(420)); // 7 hours overtime (09:00-16:00)
+    });
+
+    test('Process daily attendance - Sunday (Min) with overtime period', () {
+      // Sunday: All hours count as overtime (including gap period logic)
+      // Quarry employee: clock in at 09:00, clock out at 20:00
+      // Expected: Total Masuk = 0, Total Telat = 0, Total Lembur = 10 hours
+      // Breakdown: 09:00-16:00 (7h) + 17:00-20:00 (3h) = 10h total overtime
+      final department = Department.fromString('Quarry');
+      final record = AttendanceRecord(
+        date: DateTime(2024, 1, 7), // Sunday
+        dayOfWeek: 'Min',
+        jamMasukPagi: '09:00',
+        jamMasukLembur: '20:00', // Final clock-out
+      );
+
+      final result = AttendanceService.processDailyAttendance(record, department);
+
+      expect(result['telat'], equals(0)); // No lateness on Sunday
+      expect(result['masuk'], equals(0)); // No regular hours on Sunday
+      // 09:00-16:00 = 420 min, gap 16:00-17:00 not counted, 17:00-20:00 = 180 min
+      // Total: 420 + 180 = 600 minutes (10 hours)
+      expect(result['lembur'], equals(600));
+    });
+
+    test('Process daily attendance - Sunday (Min) respects department start time', () {
+      // Sunday: Employee clocks in before department time
+      // Quarry employee: clock in at 06:45, clock out at 16:00
+      // Should count from 07:00 (department start time)
+      // Expected: Total Masuk = 0, Total Telat = 0, Total Lembur = 9 hours (540 min)
+      final department = Department.fromString('Quarry');
+      final record = AttendanceRecord(
+        date: DateTime(2024, 1, 7), // Sunday
+        dayOfWeek: 'Min',
+        jamMasukPagi: '06:45',
+        jamKeluarSiang: '16:00',
+      );
+
+      final result = AttendanceService.processDailyAttendance(record, department);
+
+      expect(result['telat'], equals(0)); // No lateness on Sunday
+      expect(result['masuk'], equals(0)); // No regular hours on Sunday
+      expect(result['lembur'], equals(540)); // 9 hours overtime (07:00-16:00)
+    });
+
+    test('Process daily attendance - Regular weekday (not Sunday)', () {
+      // Monday: Regular calculation should apply
+      final department = Department.fromString('Quarry');
+      final record = AttendanceRecord(
+        date: DateTime(2024, 1, 1), // Monday
+        dayOfWeek: 'Sen',
+        jamMasukPagi: '09:00',
+        jamKeluarSiang: '16:00',
+      );
+
+      final result = AttendanceService.processDailyAttendance(record, department);
+
+      expect(result['telat'], equals(120)); // 2 hours late
+      expect(result['masuk'], equals(420)); // 7 hours regular (09:00-16:00)
+      expect(result['lembur'], equals(0)); // No overtime
+    });
+
+    test('AttendanceRecord - isSunday and isSaturday helpers', () {
+      final sundayRecord = AttendanceRecord(
+        date: DateTime(2024, 1, 7),
+        dayOfWeek: 'Min',
+      );
+      expect(sundayRecord.isSunday, isTrue);
+      expect(sundayRecord.isSaturday, isFalse);
+
+      final saturdayRecord = AttendanceRecord(
+        date: DateTime(2024, 1, 6),
+        dayOfWeek: 'Sab',
+      );
+      expect(saturdayRecord.isSunday, isFalse);
+      expect(saturdayRecord.isSaturday, isTrue);
+
+      final mondayRecord = AttendanceRecord(
+        date: DateTime(2024, 1, 1),
+        dayOfWeek: 'Sen',
+      );
+      expect(mondayRecord.isSunday, isFalse);
+      expect(mondayRecord.isSaturday, isFalse);
+    });
   });
 }

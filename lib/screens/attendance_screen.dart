@@ -560,6 +560,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           for (int i = 11; i < 42 && i < sheet.rows.length; i++) {
             var row = sheet.rows[i];
             
+            // Read day of week from column B (index 1)
+            // Format: "dd Sen", "dd Sel", "dd Rab", "dd Kam", "dd Jum", "dd Sab", "dd Min"
+            String? dayOfWeek;
+            if (row.length > 1 && row[1] != null && row[1]!.value != null) {
+              final cellValue = row[1]!.value.toString().trim();
+              // Extract day abbreviation (last 3 characters after space)
+              // Examples: "1 Sen" -> "Sen", "15 Min" -> "Min"
+              final parts = cellValue.split(' ');
+              if (parts.length >= 2) {
+                dayOfWeek = parts.last; // Sen, Sel, Rab, Kam, Jum, Sab, Min
+              }
+            }
+            
             // Get date from columns C-G
             // Note: Date is used only for record identification, not for calculations
             // All calculations are based on time of day only
@@ -597,6 +610,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               }
             }
 
+            if (kDebugMode && dayOfWeek != null) {
+              print('[DEBUG] Row ${i+1} (Day ${date.day}): dayOfWeek=$dayOfWeek');
+            }
+
             // Column mappings (0-indexed):
             // C=2, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10
             String? jamMasukPagi1 = _getCellValue(row, 2);
@@ -620,6 +637,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
             records.add(AttendanceRecord(
               date: date,
+              dayOfWeek: dayOfWeek,
               jamMasukPagi: jamMasukPagi,
               jamKeluarPagi: jamKeluarPagi,
               jamMasukSiang: jamMasukSiang,

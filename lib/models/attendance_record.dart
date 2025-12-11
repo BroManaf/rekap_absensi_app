@@ -1,5 +1,6 @@
 class AttendanceRecord {
   final DateTime date;
+  final String? dayOfWeek; // Day abbreviation: Sen, Sel, Rab, Kam, Jum, Sab, Min
   final String? jamMasukPagi;
   final String? jamKeluarPagi;
   final String? jamMasukSiang;
@@ -9,6 +10,7 @@ class AttendanceRecord {
 
   AttendanceRecord({
     required this.date,
+    this.dayOfWeek,
     this.jamMasukPagi,
     this.jamKeluarPagi,
     this.jamMasukSiang,
@@ -24,4 +26,10 @@ class AttendanceRecord {
       jamKeluarSiang != null ||
       jamMasukLembur != null ||
       jamKeluarLembur != null;
+
+  /// Check if this is a Sunday (Minggu)
+  bool get isSunday => dayOfWeek?.toLowerCase() == 'min';
+
+  /// Check if this is a Saturday (Sabtu)
+  bool get isSaturday => dayOfWeek?.toLowerCase() == 'sab';
 }
