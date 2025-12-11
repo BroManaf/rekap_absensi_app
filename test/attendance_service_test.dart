@@ -254,6 +254,25 @@ void main() {
       expect(result['masuk'], equals(541));
     });
 
+    test('Process daily attendance - Checkout at exactly 17:00 (no overtime)', () {
+      // Checkout at 17:00 exactly should NOT trigger overtime
+      // Only regular hours counted up to 16:00
+      final department = Department.fromString('Quarry');
+      final record = AttendanceRecord(
+        date: DateTime(2024, 1, 1),
+        jamMasukPagi: '07:00',
+        jamKeluarSiang: '17:00',
+      );
+
+      final result = AttendanceService.processDailyAttendance(record, department);
+
+      expect(result['telat'], equals(0));
+      // Regular: 07:00-16:00 = 540 min
+      // Gap: 16:00-17:00 not counted, and 17:00 is not overtime yet
+      // Total: 540 min
+      expect(result['masuk'], equals(540));
+    });
+
     test('Department detection from string', () {
       expect(Department.fromString('Staff').name, equals('Staff'));
       expect(Department.fromString('staff').name, equals('Staff'));

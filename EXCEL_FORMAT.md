@@ -54,10 +54,11 @@ Setiap baris mewakili satu hari (tanggal 1 sampai 31)
 
 **Hasil:**
 - **LamaTelat**: 60 menit (08:00 - 07:00 = 1 jam)
-- **LamaMasuk**: 720 menit = 12 jam (08:00 - 20:00)
-  - Jam kerja regular: 8 jam (08:00 - 16:00)
-  - Jam kerja siang: 1 jam (16:00 - 17:00)
-  - Jam lembur: 3 jam (17:01 - 20:00, dihitung dari jam 17:00)
+- **LamaMasuk**: 660 menit = 11 jam
+  - Jam kerja regular: 8 jam (08:00 - 16:00) = 480 menit
+  - Gap waktu: 1 jam (16:00 - 17:00) = TIDAK DIHITUNG
+  - Jam lembur: 3 jam (17:00 - 20:00) = 180 menit
+  - **Total**: 480 + 180 = 660 menit = 11 jam
 
 ### Contoh 2: Karyawan Quarry Tanpa Lembur
 - **Department**: Quarry (jam masuk: 07:00)
