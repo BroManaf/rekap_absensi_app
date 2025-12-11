@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class HistorisAbsensiScreen extends StatelessWidget {
   const HistorisAbsensiScreen({super.key});
@@ -6,78 +7,131 @@ class HistorisAbsensiScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF5F5F7),
+      decoration: AppTheme.gradientBackground,
       padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Header with gradient text
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Historis Absensi',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Lihat riwayat data absensi',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    AppTheme.primaryTextColor,
+                    AppTheme.primaryAccent,
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  'Historis Absensi',
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Lihat riwayat data absensi karyawan',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.secondaryTextColor,
                     ),
-                  ),
-                ],
               ),
             ],
           ),
           
           const SizedBox(height: 32),
           
-          // Content Area - Kosong untuk saat ini
+          // Content Area - Empty state with modern design
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                color: AppTheme.cardColor,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: AppTheme.cardShadow,
               ),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.history_rounded,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Konten Historis Absensi',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors. grey[600],
-                        fontWeight: FontWeight.w500,
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppTheme.accentGradientStart,
+                            AppTheme.accentGradientEnd,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryAccent.withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.history_rounded,
+                        size: 60,
+                        color: AppTheme.primaryTextColor,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 32),
                     Text(
-                      'Area ini akan diisi dengan tabel data absensi',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[400],
+                      'Historis Absensi',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: AppTheme.primaryTextColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      child: Text(
+                        'Fitur ini akan menampilkan riwayat lengkap data absensi karyawan dengan filter dan pencarian yang mudah',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.tertiaryTextColor,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.borderColor.withOpacity(0.5),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: AppTheme.infoColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Coming Soon',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.secondaryTextColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

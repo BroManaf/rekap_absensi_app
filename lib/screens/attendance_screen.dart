@@ -9,6 +9,7 @@ import '../models/employee.dart';
 import '../models/attendance_record.dart';
 import '../models/attendance_summary.dart';
 import '../services/attendance_service.dart';
+import '../theme/app_theme.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -26,26 +27,38 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF5F5F7),
+      decoration: AppTheme.gradientBackground,
       padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Text(
-            'Rekap Absensi Karyawan',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1F2937),
+          // Header with gradient text
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    AppTheme.primaryTextColor,
+                    AppTheme.primaryAccent,
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  'Rekap Absensi Karyawan',
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                 ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Upload file Excel absensi untuk melihat rekap kehadiran dan keterlambatan',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Upload file Excel absensi untuk melihat rekap kehadiran dan keterlambatan',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.secondaryTextColor,
+                    ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 32),
@@ -80,67 +93,100 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           _isDragging = false;
                         });
                       },
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         width: double.infinity,
-                        padding: const EdgeInsets.all(48),
+                        padding: const EdgeInsets.all(64),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          color: AppTheme.cardColor,
+                          borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: _isDragging
-                                ? const Color(0xFF6366F1)
-                                : Colors.grey[300]!,
+                                ? AppTheme.primaryAccent
+                                : AppTheme.borderColor,
                             width: 2,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          boxShadow: _isDragging
+                              ? [
+                                  BoxShadow(
+                                    color: AppTheme.primaryAccent.withOpacity(0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ]
+                              : AppTheme.subtleCardShadow,
                         ),
                         child: Column(
                           children: [
-                            Icon(
-                              Icons.upload_file_rounded,
-                              size: 64,
-                              color: _isDragging
-                                  ? const Color(0xFF6366F1)
-                                  : const Color(0xFFFFB84D),
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: _isDragging
+                                      ? [
+                                          AppTheme.accentGradientStart,
+                                          AppTheme.accentGradientEnd,
+                                        ]
+                                      : [
+                                          AppTheme.surfaceColor,
+                                          AppTheme.cardColor,
+                                        ],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Icon(
+                                Icons.cloud_upload_rounded,
+                                size: 40,
+                                color: _isDragging
+                                    ? AppTheme.primaryTextColor
+                                    : AppTheme.primaryAccent,
+                              ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 24),
                             RichText(
                               text: TextSpan(
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[700],
-                                ),
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: AppTheme.primaryTextColor,
+                                    ),
                                 children: [
                                   const TextSpan(text: 'Drop your files here or '),
                                   WidgetSpan(
-                                    child: InkWell(
-                                      onTap: _pickFile,
-                                      child: const Text(
-                                        'click here',
-                                        style: TextStyle(
-                                          color: Color(0xFF6366F1),
-                                          fontWeight: FontWeight.w600,
-                                          decoration: TextDecoration.underline,
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: GestureDetector(
+                                        onTap: _pickFile,
+                                        child: Text(
+                                          'browse',
+                                          style: TextStyle(
+                                            color: AppTheme.primaryAccent,
+                                            fontWeight: FontWeight.w600,
+                                            decoration: TextDecoration.underline,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                  const TextSpan(text: ' to upload'),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Upload Excel file (.xlsx, .xls)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[500],
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Supported formats: .xlsx, .xls',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppTheme.tertiaryTextColor,
+                                    ),
                               ),
                             ),
                           ],
@@ -152,17 +198,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   if (_summaries.isNotEmpty) ...[
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(28),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: AppTheme.cardColor,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: AppTheme.cardShadow,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,32 +215,60 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 children: [
                                   Text(
                                     'Rekap Absensi',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey[900],
-                                    ),
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          color: AppTheme.primaryTextColor,
+                                        ),
                                   ),
+                                  const SizedBox(height: 4),
                                   if (_currentFileName != null)
-                                    Text(
-                                      'File: $_currentFileName',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.insert_drive_file_rounded,
+                                          size: 14,
+                                          color: AppTheme.tertiaryTextColor,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          _currentFileName!,
+                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                color: AppTheme.tertiaryTextColor,
+                                              ),
+                                        ),
+                                      ],
                                     ),
                                 ],
                               ),
                               Row(
                                 children: [
-                                  Text(
-                                    '${_summaries.length} karyawan',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.surfaceColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.people_rounded,
+                                          size: 16,
+                                          color: AppTheme.primaryAccent,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '${_summaries.length} karyawan',
+                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                color: AppTheme.secondaryTextColor,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
+                                  const SizedBox(width: 12),
                                   ElevatedButton.icon(
                                     onPressed: () {
                                       setState(() {
@@ -208,15 +276,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                         _currentFileName = null;
                                       });
                                     },
-                                    icon: const Icon(Icons.refresh, size: 16),
+                                    icon: const Icon(Icons.refresh_rounded, size: 18),
                                     label: const Text('Upload Baru'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF6366F1),
-                                      foregroundColor: Colors.white,
+                                      backgroundColor: AppTheme.primaryAccent,
+                                      foregroundColor: AppTheme.primaryTextColor,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
+                                        horizontal: 20,
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
                                   ),
@@ -224,7 +295,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 28),
                           _buildSummaryTable(),
                         ],
                       ),
@@ -232,18 +303,26 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ],
 
                   if (_isProcessing)
-                    Padding(
-                      padding: const EdgeInsets.all(24),
+                    Container(
+                      padding: const EdgeInsets.all(48),
                       child: Column(
                         children: [
-                          const CircularProgressIndicator(),
-                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppTheme.primaryAccent,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                           Text(
                             'Memproses file Excel...',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppTheme.secondaryTextColor,
+                                ),
                           ),
                         ],
                       ),
@@ -270,24 +349,51 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildEmployeeCard(AttendanceSummary summary, int index) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.borderColor.withOpacity(0.5),
+          width: 1,
+        ),
+        boxShadow: AppTheme.subtleCardShadow,
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          childrenPadding: const EdgeInsets.all(16),
-          leading: CircleAvatar(
-            backgroundColor: Colors.blue[100],
-            child: Text(
-              '${index + 1}',
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.bold,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          childrenPadding: const EdgeInsets.all(20),
+          leading: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.accentGradientStart,
+                  AppTheme.accentGradientEnd,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryAccent.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                '${index + 1}',
+                style: const TextStyle(
+                  color: AppTheme.primaryTextColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
@@ -300,49 +406,57 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   children: [
                     Text(
                       summary.employee.name,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: Colors.grey[900],
+                        color: AppTheme.primaryTextColor,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
+                            horizontal: 10,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            borderRadius: BorderRadius.circular(4),
+                            color: AppTheme.infoColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: AppTheme.infoColor.withOpacity(0.3),
+                              width: 1,
+                            ),
                           ),
                           child: Text(
                             summary.employee.userId,
-                            style: TextStyle(
-                              color: Colors.blue[700],
+                            style: const TextStyle(
+                              color: AppTheme.infoColor,
                               fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
+                            horizontal: 10,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.purple[50],
-                            borderRadius: BorderRadius.circular(4),
+                            color: AppTheme.secondaryAccent.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: AppTheme.secondaryAccent.withOpacity(0.3),
+                              width: 1,
+                            ),
                           ),
                           child: Text(
                             summary.employee.department.name,
-                            style: TextStyle(
-                              color: Colors.purple[700],
+                            style: const TextStyle(
+                              color: AppTheme.secondaryAccent,
                               fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -358,21 +472,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildStat(
-                      Icons.access_time,
+                      Icons.login_rounded,
                       summary.totalMasukFormatted,
-                      Colors.green[700]!,
+                      AppTheme.successColor,
                       'Masuk',
                     ),
                     _buildStat(
-                      Icons.warning_amber_rounded,
+                      Icons.schedule_rounded,
                       summary.totalTelatFormatted,
-                      Colors.orange[700]!,
+                      AppTheme.warningColor,
                       'Telat',
                     ),
                     _buildStat(
-                      Icons.nights_stay,
+                      Icons.nightlight_round,
                       summary.totalLemburFormatted,
-                      Colors.indigo[700]!,
+                      AppTheme.infoColor,
                       'Lembur',
                     ),
                   ],
@@ -380,6 +494,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ),
             ],
           ),
+          iconColor: AppTheme.primaryAccent,
+          collapsedIconColor: AppTheme.secondaryTextColor,
           children: [
             _buildDetailView(summary),
           ],
@@ -389,32 +505,40 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildStat(IconData icon, String value, Color color, String label) {
-    return Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 4),
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 6),
+              Text(
+                value,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 10,
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: AppTheme.tertiaryTextColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -469,18 +593,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
+        color: AppTheme.primaryBackground.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.borderColor.withOpacity(0.3),
+          width: 1,
+        ),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Late Details Section
           _buildDetailSection(
             'Rincian Keterlambatan',
-            Icons.warning_amber_rounded,
-            Colors.orange[700]!,
+            Icons.schedule_rounded,
+            AppTheme.warningColor,
             lateDetails.isEmpty
                 ? [_buildEmptyState('Tidak ada keterlambatan')]
                 : lateDetails.map((detail) {
@@ -492,16 +620,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
                       'Masuk jam ${detail['checkInTime']}',
                       'Telat: $timeStr',
-                      Colors.orange[100]!,
+                      AppTheme.warningColor,
                     );
                   }).toList(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           // Overtime Details Section
           _buildDetailSection(
             'Rincian Lembur',
-            Icons.nights_stay,
-            Colors.indigo[700]!,
+            Icons.nightlight_round,
+            AppTheme.infoColor,
             overtimeDetails.isEmpty
                 ? [_buildEmptyState('Tidak ada lembur')]
                 : overtimeDetails.map((detail) {
@@ -513,16 +641,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
                       'Pulang jam ${detail['checkOutTime']}',
                       'Lembur: $timeStr',
-                      Colors.indigo[100]!,
+                      AppTheme.infoColor,
                     );
                   }).toList(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           // Absence/Sick Leave Details Section
           _buildDetailSection(
             'Rincian Izin/Sakit',
-            Icons.sick,
-            Colors.red[700]!,
+            Icons.sick_rounded,
+            AppTheme.errorColor,
             absenceDetails.isEmpty
                 ? [_buildEmptyState('Tidak ada izin/sakit')]
                 : absenceDetails.map((detail) {
@@ -570,14 +698,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     String date,
     String time,
     String duration,
-    Color bgColor,
+    Color color,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
@@ -585,10 +717,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             flex: 2,
             child: Text(
               date,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: 13,
-                color: Colors.grey[800],
+                color: AppTheme.primaryTextColor,
               ),
             ),
           ),
@@ -596,9 +728,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             flex: 2,
             child: Text(
               time,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
-                color: Colors.grey[700],
+                color: AppTheme.secondaryTextColor,
               ),
             ),
           ),
@@ -607,9 +739,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             child: Text(
               duration,
               style: TextStyle(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.bold,
                 fontSize: 13,
-                color: Colors.grey[900],
+                color: color,
               ),
               textAlign: TextAlign.right,
             ),
@@ -623,19 +755,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
+        color: AppTheme.surfaceColor.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppTheme.borderColor.withOpacity(0.5),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.check_circle_outline, color: Colors.grey[400], size: 20),
-          const SizedBox(width: 8),
+          Icon(
+            Icons.check_circle_outline_rounded,
+            color: AppTheme.successColor.withOpacity(0.6),
+            size: 22,
+          ),
+          const SizedBox(width: 12),
           Text(
             message,
-            style: TextStyle(
-              color: Colors.grey[600],
+            style: const TextStyle(
+              color: AppTheme.secondaryTextColor,
               fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -645,11 +785,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Widget _buildAbsenceRow(String date, AttendanceRecord record) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(8),
+        color: AppTheme.errorColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppTheme.errorColor.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,17 +803,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               Expanded(
                 child: Text(
                   date,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 13,
-                    color: Colors.grey[800],
+                    color: AppTheme.primaryTextColor,
                   ),
                 ),
               ),
-              Icon(Icons.event_busy, size: 16, color: Colors.red[700]),
+              Icon(
+                Icons.event_busy_rounded,
+                size: 18,
+                color: AppTheme.errorColor,
+              ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           TextField(
             key: ValueKey('absence_${record.date.toIso8601String()}'),
             controller: TextEditingController.fromValue(
@@ -680,24 +828,40 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
             decoration: InputDecoration(
               hintText: 'Keterangan (Sakit/Izin)',
-              hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+              hintStyle: TextStyle(
+                fontSize: 12,
+                color: AppTheme.tertiaryTextColor,
+              ),
               filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              fillColor: AppTheme.surfaceColor,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: AppTheme.borderColor.withOpacity(0.5),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: AppTheme.borderColor.withOpacity(0.5),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.red[400]!),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(
+                  color: AppTheme.errorColor,
+                  width: 2,
+                ),
               ),
             ),
-            style: const TextStyle(fontSize: 12),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.primaryTextColor,
+            ),
             onChanged: (value) {
               record.notes = value;
             },

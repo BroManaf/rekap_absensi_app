@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/attendance_screen.dart';
 import 'screens/historis_absensi_screen.dart';
 import 'widgets/sidebar.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,11 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Rekap Absensi',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: const Color(0xFFF5F5F7),
-        fontFamily: 'Inter',
-      ),
+      theme: AppTheme.darkTheme,
       home: const MainScreen(),
     );
   }
