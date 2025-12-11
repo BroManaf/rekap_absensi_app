@@ -55,7 +55,7 @@ class AppTheme {
       ),
       
       // Card Theme
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         color: cardColor,
         elevation: 4,
         shadowColor: Color(0x4D000000), // Black with 30% opacity
