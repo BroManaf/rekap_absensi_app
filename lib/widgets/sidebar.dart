@@ -13,47 +13,52 @@ class Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 70,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1D2E),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(2, 0),
+      width: 80,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          right: BorderSide(
+            color: Color(0xFFE5E7EB),
+            width: 1,
           ),
-        ],
+        ),
       ),
       child: Column(
         children: [
+          const SizedBox(height: 32),
+          
           // Logo Section
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.dashboard_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6B7FFF),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6B7FFF).withOpacity(0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.insert_chart_outlined_rounded,
+              color: Colors.white,
+              size: 26,
             ),
           ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: 40),
           
           // Menu Items
           _buildMenuItem(
-            icon: Icons.assessment_outlined,
+            icon: Icons.grid_view_rounded,
             index: 0,
             tooltip: 'Rekap Absensi',
           ),
           
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           
           _buildMenuItem(
             icon: Icons.history_rounded,
@@ -63,14 +68,15 @@ class Sidebar extends StatelessWidget {
           
           const Spacer(),
           
-          // Bottom Section (Optional - bisa untuk settings atau profile)
+          // Bottom Section
           Padding(
-            padding: const EdgeInsets.only(bottom: 24),
+            padding: const EdgeInsets.only(bottom: 32),
             child: IconButton(
               icon: const Icon(
                 Icons.settings_outlined,
                 color: Color(0xFF9CA3AF),
               ),
+              iconSize: 24,
               onPressed: () {},
               tooltip: 'Settings',
             ),
@@ -92,21 +98,28 @@ class Sidebar extends StatelessWidget {
       preferBelow: false,
       child: InkWell(
         onTap: () => onMenuSelected(index),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          width: 50,
-          height: 50,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
             color: isSelected 
-                ? const Color(0xFF6366F1) 
+                ? const Color(0xFF6B7FFF).withOpacity(0.1) 
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
+            border: isSelected
+                ? Border.all(
+                    color: const Color(0xFF6B7FFF).withOpacity(0.2),
+                    width: 1,
+                  )
+                : null,
           ),
           child: Icon(
             icon,
             color: isSelected 
-                ? Colors.white 
+                ? const Color(0xFF6B7FFF)
                 : const Color(0xFF9CA3AF),
-            size: 24,
+            size: 26,
           ),
         ),
       ),

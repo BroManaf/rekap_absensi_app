@@ -16,9 +16,29 @@ class MyApp extends StatelessWidget {
       title: 'Rekap Absensi',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: const Color(0xFFF5F5F7),
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFFFAFBFC),
         fontFamily: 'Inter',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6B7FFF),
+          brightness: Brightness.light,
+        ),
+        cardTheme: CardTheme(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          color: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
       home: const MainScreen(),
     );
@@ -35,9 +55,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const AttendanceScreen(),
-    const HistorisAbsensiScreen(),
+  static const List<Widget> _screens = [
+    AttendanceScreen(),
+    HistorisAbsensiScreen(),
   ];
 
   @override
