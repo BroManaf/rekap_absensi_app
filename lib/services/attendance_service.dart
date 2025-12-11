@@ -69,11 +69,11 @@ class AttendanceService {
   /// 
   /// NEW LOGIC:
   /// - Afternoon shift ends at 16:00
-  /// - Overtime starts at 17:01 (17:00:01 in practice, 17*60+1 in minutes = 1021)
-  /// - Time between 16:00 and 17:01 is not counted as work time
-  /// - If checkout is after 17:01, split calculation:
+  /// - Overtime threshold: must reach 17:00 to count as overtime
+  /// - If checkout is before 17:00, no overtime is counted
+  /// - If checkout is at or after 17:00, overtime is calculated from 16:00
   ///   * Regular hours: checkIn to 16:00 (960 minutes)
-  ///   * Overtime hours: 17:00 to checkOut
+  ///   * Overtime hours: 16:00 to checkOut
   /// 
   /// Returns a Map with 'regular' and 'overtime' keys containing minutes
   static Map<String, int> calculateWorkDuration(
@@ -83,7 +83,7 @@ class AttendanceService {
   ) {
     // Constants for shift boundaries
     const afternoonEndMinutes = 16 * 60; // 16:00 = 960 minutes
-    const overtimeStartMinutes = 17 * 60 + 1; // 17:01 = 1021 minutes
+    const overtimeThreshold = 17 * 60; // 17:00 = 1020 minutes (threshold to count overtime)
     
     // If employee arrives before department time, start counting from department time
     final effectiveStart = checkInTime < departmentStartTime.toMinutes() 
@@ -98,29 +98,23 @@ class AttendanceService {
       return {'regular': 0, 'overtime': 0};
     }
     
-    // Case 2: Checkout between 16:00 and 17:01 - count up to 16:00 only
-    if (checkOutTime > afternoonEndMinutes && checkOutTime < overtimeStartMinutes) {
+    // Case 2: Checkout between 16:00 and 17:00 (exclusive) - count up to 16:00 only, no overtime
+    if (checkOutTime < overtimeThreshold) {
       if (afternoonEndMinutes > effectiveStart) {
         return {'regular': afternoonEndMinutes - effectiveStart, 'overtime': 0};
       }
       return {'regular': 0, 'overtime': 0};
     }
     
-    // Case 3: Checkout at or after 17:01 - split calculation
+    // Case 3: Checkout at or after 17:00 - split calculation
     // Regular hours: effectiveStart to 16:00
     int regularHours = 0;
     if (afternoonEndMinutes > effectiveStart) {
       regularHours = afternoonEndMinutes - effectiveStart;
     }
     
-    // Overtime hours: 17:01 to checkOut (calculated from 17:00 for simplicity)
-    // Note: Overtime period starts at 17:01, but we use 17:00 (1020) as the base 
-    // for calculation as per requirement: "lembur dihitung mulai dari jam 17:00"
-    const overtimeBase = 17 * 60; // 17:00 = 1020 minutes
-    int overtimeHours = 0;
-    if (checkOutTime >= overtimeStartMinutes) {
-      overtimeHours = checkOutTime - overtimeBase;
-    }
+    // Overtime hours: 16:00 to checkOut (calculated from 16:00 since threshold is met)
+    int overtimeHours = checkOutTime - afternoonEndMinutes;
     
     return {'regular': regularHours, 'overtime': overtimeHours};
   }
