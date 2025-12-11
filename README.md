@@ -22,6 +22,14 @@ Aplikasi Flutter untuk mengelola dan merekap data absensi karyawan dari file Exc
 
 Lihat [EXCEL_FORMAT.md](EXCEL_FORMAT.md) untuk detail lengkap tentang format file Excel yang didukung.
 
+**⚠️ PERUBAHAN PENTING (Desember 2024):**
+- Kolom "Jam Masuk Lembur" sekarang berfungsi sebagai **jam keluar akhir**, bukan jam masuk lembur
+- Jam keluar siang berubah dari 18:00 menjadi 16:00
+- Lembur dihitung mulai dari jam 17:01 (dihitung dari 17:00)
+- Waktu 16:00-17:01 TIDAK dihitung sebagai jam kerja
+
+Lihat [OVERTIME_LOGIC_UPDATE.md](OVERTIME_LOGIC_UPDATE.md) dan [OVERTIME_VISUAL_GUIDE.md](OVERTIME_VISUAL_GUIDE.md) untuk penjelasan detail.
+
 ## Teknologi
 
 - Flutter (Dart)
