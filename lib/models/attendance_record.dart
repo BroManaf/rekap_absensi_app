@@ -7,6 +7,7 @@ class AttendanceRecord {
   final String? jamKeluarSiang;
   final String? jamMasukLembur;
   final String? jamKeluarLembur;
+  String? notes; // Editable notes for absence/sick leave
 
   AttendanceRecord({
     required this.date,
@@ -17,6 +18,7 @@ class AttendanceRecord {
     this.jamKeluarSiang,
     this.jamMasukLembur,
     this.jamKeluarLembur,
+    this.notes,
   });
 
   bool get hasData =>
@@ -32,4 +34,7 @@ class AttendanceRecord {
 
   /// Check if this is a Saturday (Sabtu)
   bool get isSaturday => dayOfWeek?.toLowerCase() == 'sab';
+  
+  /// Check if this is an absence day (no data, not Saturday, not Sunday)
+  bool get isAbsence => !hasData && !isSaturday && !isSunday;
 }

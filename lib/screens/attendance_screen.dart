@@ -419,9 +419,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildDetailView(AttendanceSummary summary) {
-    // Process records to get late and overtime details
+    // Process records to get late, overtime, and absence details
     final lateDetails = <Map<String, dynamic>>[];
     final overtimeDetails = <Map<String, dynamic>>[];
+    final absenceDetails = <Map<String, dynamic>>[];
 
     for (var record in summary.records) {
       if (record.hasData) {
@@ -456,6 +457,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             'overtimeMinutes': lembur,
           });
         }
+      } else if (record.isAbsence) {
+        // Collect absence details (no data, not Saturday, not Sunday)
+        absenceDetails.add({
+          'date': record.date,
+          'dayOfWeek': record.dayOfWeek ?? '-',
+          'record': record, // Keep reference for notes editing
+        });
       }
     }
 
@@ -506,6 +514,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       'Pulang jam ${detail['checkOutTime']}',
                       'Lembur: $timeStr',
                       Colors.indigo[100]!,
+                    );
+                  }).toList(),
+          ),
+          const SizedBox(height: 16),
+          // Absence/Sick Leave Details Section
+          _buildDetailSection(
+            'Rincian Izin/Sakit',
+            Icons.sick,
+            Colors.red[700]!,
+            absenceDetails.isEmpty
+                ? [_buildEmptyState('Tidak ada izin/sakit')]
+                : absenceDetails.map((detail) {
+                    return _buildAbsenceRow(
+                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
+                      detail['record'],
                     );
                   }).toList(),
           ),
@@ -620,6 +643,66 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
+  Widget _buildAbsenceRow(String date, AttendanceRecord record) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  date,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ),
+              Icon(Icons.event_busy, size: 16, color: Colors.red[700]),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: TextEditingController(text: record.notes ?? ''),
+            decoration: InputDecoration(
+              hintText: 'Keterangan (Sakit/Izin)',
+              hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: BorderSide(color: Colors.red[400]!),
+              ),
+            ),
+            style: const TextStyle(fontSize: 12),
+            onChanged: (value) {
+              setState(() {
+                record.notes = value;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -651,6 +734,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         // Employee 1
         {
           'deptCols': [2, 3, 4, 5, 6], // C-G
+          'dateCols': [2, 3, 4, 5, 6], // C-G (row 3 for month detection)
           'nameCols': [8, 9, 10], // I-K
           'userIdCols': [8, 9, 10], // I-K (row 3)
           'jamMasukPagi': [2, 3], // C, D
@@ -663,6 +747,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         // Employee 2
         {
           'deptCols': [13, 14, 15, 16, 17], // N-R
+          'dateCols': [13, 14, 15, 16, 17], // N-R (row 3 for month detection)
           'nameCols': [19, 20, 21], // T-V
           'userIdCols': [19, 20, 21], // T-V (row 3)
           'jamMasukPagi': [13, 14], // N, O
@@ -675,6 +760,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         // Employee 3
         {
           'deptCols': [24, 25, 26, 27, 28], // Y-AC
+          'dateCols': [24, 25, 26, 27, 28], // Y-AC (row 3 for month detection)
           'nameCols': [30, 31, 32], // AE-AG
           'userIdCols': [30, 31, 32], // AE-AG (row 3)
           'jamMasukPagi': [24, 25], // Y, Z
@@ -774,6 +860,67 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       }
     }
 
+    // Detect month and year from row 3 (index 2) date columns
+    int? year;
+    int? month;
+    for (int col in mapping['dateCols']) {
+      if (sheet.rows.length > 2 && sheet.rows[2].length > col) {
+        var cell = sheet.rows[2][col];
+        if (cell != null && cell.value != null) {
+          try {
+            // Try to parse as DateTime
+            final value = cell.value;
+            DateTime? parsedDate;
+            
+            if (value is DateTime) {
+              parsedDate = value;
+            } else {
+              // Try parsing string as date
+              final valueStr = value.toString();
+              // Try various date formats
+              try {
+                parsedDate = DateTime.parse(valueStr);
+              } catch (e) {
+                // If direct parsing fails, try Excel date number
+                final excelDate = double.tryParse(valueStr);
+                if (excelDate != null) {
+                  // Excel epoch: 1899-12-30
+                  final excelEpoch = DateTime(1899, 12, 30);
+                  parsedDate = excelEpoch.add(Duration(days: excelDate.toInt()));
+                }
+              }
+            }
+            
+            if (parsedDate != null) {
+              year = parsedDate.year;
+              month = parsedDate.month;
+              break;
+            }
+          } catch (e) {
+            // Ignore parsing errors, continue to next column
+          }
+        }
+      }
+    }
+
+    // Default to current year and month if not detected
+    if (year == null || month == null) {
+      final now = DateTime.now();
+      year = now.year;
+      month = now.month;
+      if (kDebugMode) {
+        print('[DEBUG] Could not detect month/year, using current: $year-$month');
+      }
+    }
+
+    // Determine number of days in the detected month
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+    final maxRowIndex = 11 + daysInMonth; // row 12 = index 11 (day 1)
+    
+    if (kDebugMode) {
+      print('[DEBUG] Detected month: $year-$month with $daysInMonth days, reading rows 12-${maxRowIndex + 1}');
+    }
+
     // Skip if essential data is missing
     if (employeeName.isEmpty || userId.isEmpty) {
       if (kDebugMode) {
@@ -797,12 +944,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       department: department,
     );
 
-    // Read attendance data from rows 12-42 (index 11-41) for dates 1-31
+    // Read attendance data dynamically based on detected month
     List<AttendanceRecord> records = [];
     if (kDebugMode) {
       print('[DEBUG] Reading attendance data for ${employee.name}');
     }
-    for (int i = 11; i < 42 && i < sheet.rows.length; i++) {
+    for (int i = 11; i < maxRowIndex && i < sheet.rows.length; i++) {
       var row = sheet.rows[i];
       
       // Read day of week from column B (index 1)
@@ -818,42 +965,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         }
       }
       
-      // Get date from columns C-G (always use employee 1's date columns for all employees)
-      // Note: All employees in a sheet share the same date column as per Excel structure
-      // Date is used only for record identification, not for calculations
-      // All calculations are based on time of day only
-      // We use a fixed reference date to avoid issues with month boundaries
-      const referenceYear = 2024;
-      const referenceMonth = 1; // January has 31 days
-      DateTime? date;
-      for (int col = 2; col <= 6; col++) {
-        if (row.length > col) {
-          var cell = row[col];
-          if (cell != null && cell.value != null) {
-            try {
-              // Try to parse as date or number (day of month)
-              final value = cell.value.toString();
-              final dayOfMonth = int.tryParse(value);
-              if (dayOfMonth != null && dayOfMonth >= 1 && dayOfMonth <= 31) {
-                date = DateTime(referenceYear, referenceMonth, dayOfMonth);
-              }
-            } catch (e) {
-              // Ignore parsing errors
-            }
-            break;
-          }
-        }
-      }
-
-      if (date == null) {
-        // Use row index as day (row 12 = day 1, row 13 = day 2, etc.)
-        final dayNumber = i - 10;
-        if (dayNumber >= 1 && dayNumber <= 31) {
-          date = DateTime(referenceYear, referenceMonth, dayNumber);
-        } else {
-          // Fallback for invalid row numbers
-          date = DateTime(referenceYear, referenceMonth, 1);
-        }
+      // Get date using detected month and year
+      final dayNumber = i - 10; // row 12 = day 1, row 13 = day 2, etc.
+      DateTime date;
+      if (dayNumber >= 1 && dayNumber <= daysInMonth) {
+        date = DateTime(year, month, dayNumber);
+      } else {
+        // Fallback
+        date = DateTime(year, month, 1);
       }
 
       if (kDebugMode && dayOfWeek != null) {
