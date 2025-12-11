@@ -17,9 +17,9 @@ Setiap baris mewakili satu hari (tanggal 1 sampai 31)
 - **C & D**: Jam masuk pagi (contoh: "07:00")
 - **E**: Jam keluar pagi (contoh: "12:00")
 - **F & G**: Jam masuk siang (contoh: "12:30")
-- **H**: Jam keluar siang (contoh: "18:00")
-- **I & J**: Jam masuk lembur (contoh: "18:30")
-- **K**: Jam keluar lembur (contoh: "21:00")
+- **H**: Jam keluar siang (contoh: "16:00")
+- **I & J**: Jam keluar akhir/lembur (contoh: "20:00") - **PERUBAHAN: Ini sekarang jam keluar, bukan jam masuk lembur**
+- **K**: Jam keluar lembur (TIDAK DIGUNAKAN LAGI)
 
 ## Department dan Jam Kerja
 
@@ -36,21 +36,39 @@ Setiap baris mewakili satu hari (tanggal 1 sampai 31)
 | Shift   | Jam Mulai | Jam Selesai |
 |---------|-----------|-------------|
 | Pagi    | 07:00     | 12:00       |
-| Siang   | 12:01     | 18:00       |
-| Lembur  | 18:01     | 23:59       |
+| Siang   | 12:01     | 16:00       |
+| Lembur  | 17:01     | 05:00       |
+
+**PERUBAHAN PENTING:**
+- Jam keluar siang berubah dari 18:00 menjadi 16:00
+- Lembur dihitung mulai dari jam 17:01 hingga 05:00 pagi
+- Kolom "Jam Masuk Lembur" (I & J) sekarang berfungsi sebagai jam keluar akhir
+- Kolom "Jam Keluar Lembur" (K) tidak lagi digunakan dalam perhitungan
 
 ## Contoh Perhitungan
 
-### Contoh 1: Karyawan Quarry
+### Contoh 1: Karyawan Quarry dengan Lembur
+- **Department**: Quarry (jam masuk: 07:00)
+- **Masuk Pagi**: 08:00 (tercatat di kolom jam masuk pagi)
+- **Keluar Akhir**: 20:00 (tercatat di kolom "jam masuk lembur" yang sekarang berfungsi sebagai jam keluar)
+
+**Hasil:**
+- **LamaTelat**: 60 menit (08:00 - 07:00 = 1 jam)
+- **LamaMasuk**: 720 menit = 12 jam (08:00 - 20:00)
+  - Jam kerja regular: 8 jam (08:00 - 16:00)
+  - Jam kerja siang: 1 jam (16:00 - 17:00)
+  - Jam lembur: 3 jam (17:01 - 20:00, dihitung dari jam 17:00)
+
+### Contoh 2: Karyawan Quarry Tanpa Lembur
 - **Department**: Quarry (jam masuk: 07:00)
 - **Masuk**: 09:00
-- **Keluar**: 18:00
+- **Keluar**: 16:00
 
 **Hasil:**
 - **LamaTelat**: 120 menit (09:00 - 07:00)
-- **LamaMasuk**: 540 menit (09:00 - 18:00)
+- **LamaMasuk**: 420 menit (09:00 - 16:00 = 7 jam)
 
-### Contoh 2: Karyawan Quarry (Masuk Lebih Awal)
+### Contoh 3: Karyawan Quarry (Masuk Lebih Awal)
 - **Department**: Quarry (jam masuk: 07:00)
 - **Masuk Pagi**: 06:45
 - **Keluar Siang**: 12:40
@@ -59,7 +77,7 @@ Setiap baris mewakili satu hari (tanggal 1 sampai 31)
 - **LamaTelat**: 0 menit (masuk lebih awal)
 - **LamaMasuk**: 340 menit (dihitung dari 07:00 hingga 12:40)
 
-### Contoh 3: Karyawan Office
+### Contoh 4: Karyawan Office
 - **Department**: Office (jam masuk: 08:00)
 - **Masuk Pagi**: 07:50
 - **Keluar Pagi**: 12:00
@@ -79,5 +97,7 @@ Gunakan format HH:MM (contoh: "07:30", "16:45")
 ## Catatan
 - Jika karyawan masuk lebih awal dari jam masuk department, perhitungan dimulai dari jam masuk department
 - Jika karyawan masuk terlambat, selisihnya dihitung sebagai LamaTelat
+- **PENTING**: Kolom "Jam Masuk Lembur" (I & J) sekarang berfungsi sebagai jam keluar akhir, bukan jam masuk lembur
+- Lembur otomatis dihitung jika karyawan keluar setelah jam 17:00
 - Total dihitung dari akumulasi 31 hari
 - Sel kosong akan diabaikan dalam perhitungan

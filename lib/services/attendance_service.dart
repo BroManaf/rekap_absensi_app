@@ -86,6 +86,11 @@ class AttendanceService {
 
   /// Process a single day's attendance record
   /// 
+  /// New logic as per requirements:
+  /// - jamMasukLembur now represents the actual clock-out time (not overtime clock-in)
+  /// - jamKeluarLembur is no longer used in calculations
+  /// - Overtime starts from 17:01 onwards
+  /// 
   /// TODO: Remove debug logging after validating the fix with actual Excel data
   static Map<String, int> processDailyAttendance(
     AttendanceRecord record,
@@ -97,8 +102,8 @@ class AttendanceService {
       print('[DEBUG]   jamKeluarPagi="${record.jamKeluarPagi}"');
       print('[DEBUG]   jamMasukSiang="${record.jamMasukSiang}"');
       print('[DEBUG]   jamKeluarSiang="${record.jamKeluarSiang}"');
-      print('[DEBUG]   jamMasukLembur="${record.jamMasukLembur}"');
-      print('[DEBUG]   jamKeluarLembur="${record.jamKeluarLembur}"');
+      print('[DEBUG]   jamMasukLembur="${record.jamMasukLembur}" (NOW USED AS FINAL CLOCK-OUT)');
+      print('[DEBUG]   jamKeluarLembur="${record.jamKeluarLembur}" (NO LONGER USED)');
     }
     
     int dailyMasuk = 0;
@@ -111,30 +116,30 @@ class AttendanceService {
     // Collect all check-in times
     final masukPagi = parseTimeToMinutes(record.jamMasukPagi);
     final masukSiang = parseTimeToMinutes(record.jamMasukSiang);
-    final masukLembur = parseTimeToMinutes(record.jamMasukLembur);
+    
+    // NEW: jamMasukLembur is now the final clock-out time (not a clock-in)
+    final lemburAsCheckOut = parseTimeToMinutes(record.jamMasukLembur);
 
     // Collect all check-out times
     final keluarPagi = parseTimeToMinutes(record.jamKeluarPagi);
     final keluarSiang = parseTimeToMinutes(record.jamKeluarSiang);
-    final keluarLembur = parseTimeToMinutes(record.jamKeluarLembur);
+    // jamKeluarLembur is no longer used
 
     if (kDebugMode) {
-      print('[DEBUG]   Parsed: masukPagi=$masukPagi, masukSiang=$masukSiang, masukLembur=$masukLembur');
-      print('[DEBUG]   Parsed: keluarPagi=$keluarPagi, keluarSiang=$keluarSiang, keluarLembur=$keluarLembur');
+      print('[DEBUG]   Parsed: masukPagi=$masukPagi, masukSiang=$masukSiang');
+      print('[DEBUG]   Parsed: keluarPagi=$keluarPagi, keluarSiang=$keluarSiang, lemburAsCheckOut=$lemburAsCheckOut');
     }
 
-    // Determine first check-in
+    // Determine first check-in (only from actual check-in times)
     if (masukPagi != null) {
       firstCheckIn = masukPagi;
     } else if (masukSiang != null) {
       firstCheckIn = masukSiang;
-    } else if (masukLembur != null) {
-      firstCheckIn = masukLembur;
     }
 
-    // Determine last check-out
-    if (keluarLembur != null) {
-      lastCheckOut = keluarLembur;
+    // Determine last check-out (prioritize lemburAsCheckOut as it's the final clock-out)
+    if (lemburAsCheckOut != null) {
+      lastCheckOut = lemburAsCheckOut;
     } else if (keluarSiang != null) {
       lastCheckOut = keluarSiang;
     } else if (keluarPagi != null) {

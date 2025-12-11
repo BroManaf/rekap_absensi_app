@@ -69,11 +69,11 @@ void main() {
     });
 
     test('Calculate work duration with late arrival - Example 1', () {
-      // Quarry employee: arrives at 09:00, leaves at 18:00
-      // Should count from 09:00 to 18:00 = 540 minutes
+      // Quarry employee: arrives at 09:00, leaves at 16:00
+      // Should count from 09:00 to 16:00 = 420 minutes
       final departmentTime = TimeOfDay(hour: 7, minute: 0);
       final checkIn = 540; // 09:00
-      final checkOut = 1080; // 18:00
+      final checkOut = 960; // 16:00
 
       final duration = AttendanceService.calculateWorkDuration(
         checkIn,
@@ -81,7 +81,7 @@ void main() {
         departmentTime,
       );
 
-      expect(duration, equals(540));
+      expect(duration, equals(420));
     });
 
     test('Process daily attendance - Example 1 (Late arrival)', () {
@@ -89,13 +89,13 @@ void main() {
       final record = AttendanceRecord(
         date: DateTime(2024, 1, 1),
         jamMasukPagi: '09:00',
-        jamKeluarSiang: '18:00',
+        jamKeluarSiang: '16:00',
       );
 
       final result = AttendanceService.processDailyAttendance(record, department);
 
       expect(result['telat'], equals(120)); // 2 hours late
-      expect(result['masuk'], equals(540)); // 9 hours work
+      expect(result['masuk'], equals(420)); // 7 hours work (09:00 - 16:00)
     });
 
     test('Process daily attendance - Example 2 (Early arrival)', () {
@@ -128,20 +128,40 @@ void main() {
       expect(result['masuk'], equals(480)); // 8 hours total
     });
 
-    test('Process daily attendance - With overtime', () {
+    test('Process daily attendance - With overtime (NEW LOGIC)', () {
+      // NEW: jamMasukLembur now represents the final clock-out time
       final department = Department.fromString('Staff');
       final record = AttendanceRecord(
         date: DateTime(2024, 1, 1),
         jamMasukPagi: '07:00',
-        jamKeluarSiang: '17:00',
-        jamMasukLembur: '18:00',
-        jamKeluarLembur: '21:00',
+        jamMasukLembur: '21:00', // This is now the final clock-out time
       );
 
       final result = AttendanceService.processDailyAttendance(record, department);
 
       expect(result['telat'], equals(0)); // No lateness
-      expect(result['masuk'], equals(780)); // 13 hours total (10h regular + 3h overtime)
+      expect(result['masuk'], equals(840)); // 14 hours total (07:00 to 21:00)
+    });
+
+    test('Process daily attendance - Quarry employee with overtime (Example from problem statement)', () {
+      // Example from problem statement:
+      // Quarry employee: clock in at 08:00, clock out at 20:00
+      // Expected: LamaTelat = 1 hour, LamaMasuk = 11 hours (8 + 3 overtime from 17:00)
+      final department = Department.fromString('Quarry');
+      final record = AttendanceRecord(
+        date: DateTime(2024, 1, 1),
+        jamMasukPagi: '08:00',
+        jamMasukLembur: '20:00', // Final clock-out time (used to be called "jam masuk lembur")
+      );
+
+      final result = AttendanceService.processDailyAttendance(record, department);
+
+      expect(result['telat'], equals(60)); // 1 hour late (08:00 - 07:00)
+      expect(result['masuk'], equals(720)); // 12 hours total (08:00 to 20:00)
+      // Note: Total includes regular hours + overtime
+      // Regular: 08:00-17:00 = 9 hours
+      // Overtime: 17:00-20:00 = 3 hours
+      // Total: 12 hours
     });
 
     test('Calculate summary for multiple days', () {
@@ -156,17 +176,17 @@ void main() {
         AttendanceRecord(
           date: DateTime(2024, 1, 1),
           jamMasukPagi: '07:00',
-          jamKeluarSiang: '17:00',
+          jamKeluarSiang: '16:00',
         ),
         AttendanceRecord(
           date: DateTime(2024, 1, 2),
           jamMasukPagi: '07:30',
-          jamKeluarSiang: '17:00',
+          jamKeluarSiang: '16:00',
         ),
         AttendanceRecord(
           date: DateTime(2024, 1, 3),
           jamMasukPagi: '08:00',
-          jamKeluarSiang: '18:00',
+          jamMasukLembur: '20:00', // Final clock-out with overtime
         ),
       ];
 
@@ -174,7 +194,7 @@ void main() {
 
       expect(summary.employee.userId, equals('EMP001'));
       expect(summary.totalTelatMinutes, equals(90)); // 0 + 30 + 60
-      expect(summary.totalMasukMinutes, equals(1800)); // 600 + 570 + 600
+      expect(summary.totalMasukMinutes, equals(1680)); // 540 + 510 + 720
     });
 
     test('Department detection from string', () {
