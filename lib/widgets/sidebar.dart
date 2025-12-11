@@ -15,7 +15,7 @@ class Sidebar extends StatefulWidget {
   State<Sidebar> createState() => _SidebarState();
 }
 
-class _SidebarState extends State<Sidebar> with SingleTickerProviderStateMixin {
+class _SidebarState extends State<Sidebar> {
   int? _hoveredIndex;
 
   @override
@@ -97,20 +97,26 @@ class _SidebarState extends State<Sidebar> with SingleTickerProviderStateMixin {
             padding: const EdgeInsets.only(bottom: 32),
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
-              child: Tooltip(
-                message: 'Settings',
-                preferBelow: false,
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.settings_outlined,
-                    color: AppTheme.secondaryTextColor,
-                    size: 22,
+              child: GestureDetector(
+                onTap: () {
+                  // Settings functionality can be implemented here
+                  // For now, this is a placeholder
+                },
+                child: Tooltip(
+                  message: 'Settings',
+                  preferBelow: false,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceColor.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.settings_outlined,
+                      color: AppTheme.secondaryTextColor,
+                      size: 22,
+                    ),
                   ),
                 ),
               ),

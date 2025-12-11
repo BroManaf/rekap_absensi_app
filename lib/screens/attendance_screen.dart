@@ -604,64 +604,73 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Late Details Section
-          _buildDetailSection(
-            'Rincian Keterlambatan',
-            Icons.schedule_rounded,
-            AppTheme.warningColor,
-            lateDetails.isEmpty
-                ? [_buildEmptyState('Tidak ada keterlambatan')]
-                : lateDetails.map((detail) {
-                    final hours = detail['lateMinutes'] ~/ 60;
-                    final minutes = detail['lateMinutes'] % 60;
-                    final timeStr = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
-                    
-                    return _buildDetailRow(
-                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
-                      'Masuk jam ${detail['checkInTime']}',
-                      'Telat: $timeStr',
-                      AppTheme.warningColor,
-                    );
-                  }).toList(),
-          ),
+          _buildLateDetailsSection(lateDetails),
           const SizedBox(height: 20),
-          // Overtime Details Section
-          _buildDetailSection(
-            'Rincian Lembur',
-            Icons.nightlight_round,
-            AppTheme.infoColor,
-            overtimeDetails.isEmpty
-                ? [_buildEmptyState('Tidak ada lembur')]
-                : overtimeDetails.map((detail) {
-                    final hours = detail['overtimeMinutes'] ~/ 60;
-                    final minutes = detail['overtimeMinutes'] % 60;
-                    final timeStr = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
-                    
-                    return _buildDetailRow(
-                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
-                      'Pulang jam ${detail['checkOutTime']}',
-                      'Lembur: $timeStr',
-                      AppTheme.infoColor,
-                    );
-                  }).toList(),
-          ),
+          _buildOvertimeDetailsSection(overtimeDetails),
           const SizedBox(height: 20),
-          // Absence/Sick Leave Details Section
-          _buildDetailSection(
-            'Rincian Izin/Sakit',
-            Icons.sick_rounded,
-            AppTheme.errorColor,
-            absenceDetails.isEmpty
-                ? [_buildEmptyState('Tidak ada izin/sakit')]
-                : absenceDetails.map((detail) {
-                    return _buildAbsenceRow(
-                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
-                      detail['record'],
-                    );
-                  }).toList(),
-          ),
+          _buildAbsenceDetailsSection(absenceDetails),
         ],
       ),
+    );
+  }
+
+  Widget _buildLateDetailsSection(List<Map<String, dynamic>> lateDetails) {
+    return _buildDetailSection(
+      'Rincian Keterlambatan',
+      Icons.schedule_rounded,
+      AppTheme.warningColor,
+      lateDetails.isEmpty
+          ? [_buildEmptyState('Tidak ada keterlambatan')]
+          : lateDetails.map((detail) {
+              final hours = detail['lateMinutes'] ~/ 60;
+              final minutes = detail['lateMinutes'] % 60;
+              final timeStr = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
+              
+              return _buildDetailRow(
+                'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
+                'Masuk jam ${detail['checkInTime']}',
+                'Telat: $timeStr',
+                AppTheme.warningColor,
+              );
+            }).toList(),
+    );
+  }
+
+  Widget _buildOvertimeDetailsSection(List<Map<String, dynamic>> overtimeDetails) {
+    return _buildDetailSection(
+      'Rincian Lembur',
+      Icons.nightlight_round,
+      AppTheme.infoColor,
+      overtimeDetails.isEmpty
+          ? [_buildEmptyState('Tidak ada lembur')]
+          : overtimeDetails.map((detail) {
+              final hours = detail['overtimeMinutes'] ~/ 60;
+              final minutes = detail['overtimeMinutes'] % 60;
+              final timeStr = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
+              
+              return _buildDetailRow(
+                'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
+                'Pulang jam ${detail['checkOutTime']}',
+                'Lembur: $timeStr',
+                AppTheme.infoColor,
+              );
+            }).toList(),
+    );
+  }
+
+  Widget _buildAbsenceDetailsSection(List<Map<String, dynamic>> absenceDetails) {
+    return _buildDetailSection(
+      'Rincian Izin/Sakit',
+      Icons.sick_rounded,
+      AppTheme.errorColor,
+      absenceDetails.isEmpty
+          ? [_buildEmptyState('Tidak ada izin/sakit')]
+          : absenceDetails.map((detail) {
+              return _buildAbsenceRow(
+                'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
+                detail['record'],
+              );
+            }).toList(),
     );
   }
 
