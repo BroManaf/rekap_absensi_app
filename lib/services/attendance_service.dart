@@ -201,47 +201,14 @@ class AttendanceService {
       }
       
       if (firstCheckIn != null && lastCheckOut != null) {
-        // If employee arrives before department time, start counting from department time
-        final effectiveStart = firstCheckIn < department.jamMasuk.toMinutes() 
-            ? department.jamMasuk.toMinutes() 
-            : firstCheckIn;
+        // Reuse calculateWorkDuration to get the time breakdown
+        final duration = calculateWorkDuration(firstCheckIn, lastCheckOut, department.jamMasuk);
         
-        // Calculate overtime with 16:00 boundary and gap rules
-        const afternoonEndMinutes = 16 * 60; // 16:00 = 960 minutes
-        const overtimeStartMinutes = 17 * 60 + 1; // 17:01 = 1021 minutes
-        
-        // Case 1: Checkout before or at 16:00 - all hours are overtime
-        if (lastCheckOut <= afternoonEndMinutes) {
-          if (lastCheckOut > effectiveStart) {
-            dailyLembur = lastCheckOut - effectiveStart;
-          }
-        }
-        // Case 2: Checkout between 16:00 and 17:01 - count up to 16:00 as overtime
-        else if (lastCheckOut > afternoonEndMinutes && lastCheckOut < overtimeStartMinutes) {
-          if (afternoonEndMinutes > effectiveStart) {
-            dailyLembur = afternoonEndMinutes - effectiveStart;
-          }
-        }
-        // Case 3: Checkout at or after 17:01 - split calculation
-        else {
-          // First part: effectiveStart to 16:00 as overtime
-          int firstPart = 0;
-          if (afternoonEndMinutes > effectiveStart) {
-            firstPart = afternoonEndMinutes - effectiveStart;
-          }
-          
-          // Second part: 17:00 to checkOut as overtime
-          const overtimeBase = 17 * 60; // 17:00 = 1020 minutes
-          int secondPart = 0;
-          if (lastCheckOut >= overtimeStartMinutes) {
-            secondPart = lastCheckOut - overtimeBase;
-          }
-          
-          dailyLembur = firstPart + secondPart;
-        }
+        // On Sunday, both regular and overtime periods count as overtime
+        dailyLembur = (duration['regular'] ?? 0) + (duration['overtime'] ?? 0);
         
         if (kDebugMode) {
-          print('[DEBUG]   SUNDAY: dailyLembur=$dailyLembur minutes (all hours as overtime)');
+          print('[DEBUG]   SUNDAY: regular=${duration['regular']}, overtime=${duration['overtime']}, total lembur=$dailyLembur minutes');
         }
       }
       
