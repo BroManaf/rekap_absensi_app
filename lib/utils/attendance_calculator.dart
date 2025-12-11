@@ -16,7 +16,7 @@ class AttendanceResult {
 
   /// Format duration as "Xh Ym" string
   static String formatDuration(Duration duration) {
-    if (duration.inSeconds <= 0) return '0h 0m';
+    if (duration.isNegative || duration.inSeconds == 0) return '0h 0m';
     
     int hours = duration.inHours;
     int minutes = duration.inMinutes.remainder(60);
@@ -83,7 +83,11 @@ AttendanceResult computeAttendance({
   
   // Calculate work time (LamaMasuk) - from masukPagi to regularEnd (16:00)
   Duration lamaMasuk = Duration.zero;
-  if (finalExit.isAfter(regularEndTime)) {
+  
+  // Ensure we don't calculate work time if entry is after regular end
+  if (masukPagi.isAfter(regularEndTime)) {
+    lamaMasuk = Duration.zero;
+  } else if (finalExit.isAfter(regularEndTime)) {
     // If final exit is after regular end, count full regular work time
     lamaMasuk = regularEndTime.difference(masukPagi);
   } else {
@@ -92,7 +96,7 @@ AttendanceResult computeAttendance({
   }
   
   // Ensure lamaMasuk is not negative
-  if (lamaMasuk.inSeconds < 0) {
+  if (lamaMasuk.isNegative) {
     lamaMasuk = Duration.zero;
   }
   
@@ -129,7 +133,7 @@ AttendanceResult computeAttendance({
     lamaLembur = overtimeActualEnd.difference(overtimeActualStart);
     
     // Ensure non-negative
-    if (lamaLembur.inSeconds < 0) {
+    if (lamaLembur.isNegative) {
       lamaLembur = Duration.zero;
     }
   }
@@ -163,6 +167,11 @@ DateTime? parseTimeString(String timeStr, DateTime referenceDate) {
     if (match != null) {
       int hour = int.parse(match.group(1)!);
       int minute = int.parse(match.group(2)!);
+      
+      // Validate time ranges
+      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+        return null;
+      }
       
       return DateTime(
         referenceDate.year,

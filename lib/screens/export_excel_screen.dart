@@ -683,20 +683,20 @@ class _ExportExcelScreenState extends State<ExportExcelScreen> {
           for (int i = 0; i < headerRow.length; i++) {
             String header = headerRow[i]?.value?.toString().toLowerCase() ?? '';
             
+            // Check for "masuk lembur" or "jam lembur" first (more specific)
+            if ((header.contains('masuk') && header.contains('lembur')) || 
+                (header.contains('jam') && header.contains('lembur'))) {
+              masukLemburIdx = i;
+            }
             // Check for "masuk pagi" or "jam masuk"
-            if ((header.contains('masuk') && header.contains('pagi')) || 
-                header.contains('jam masuk')) {
+            else if ((header.contains('masuk') && header.contains('pagi')) || 
+                     (header == 'jam masuk' || header == 'masuk')) {
               masukPagiIdx = i;
             }
             // Check for "keluar siang" or "jam keluar"
             else if ((header.contains('keluar') && header.contains('siang')) || 
-                     header.contains('jam keluar')) {
+                     (header == 'jam keluar' || header == 'keluar')) {
               keluarSiangIdx = i;
-            }
-            // Check for "masuk lembur" or "jam lembur"
-            else if ((header.contains('masuk') && header.contains('lembur')) || 
-                     header.contains('jam lembur')) {
-              masukLemburIdx = i;
             }
           }
           
@@ -752,6 +752,11 @@ class _ExportExcelScreenState extends State<ExportExcelScreen> {
                     totalKerja = result.totalFormatted;
                   } catch (e) {
                     // If calculation fails, keep default '-' values
+                    // Log error for debugging (in debug mode)
+                    assert(() {
+                      print('Attendance calculation error for row ${i + 1}: $e');
+                      return true;
+                    }());
                   }
                 }
               }
