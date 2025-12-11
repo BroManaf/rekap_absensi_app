@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class Sidebar extends StatelessWidget {
   final int selectedIndex;
@@ -13,69 +14,114 @@ class Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 70,
+      width: 80,
+      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1D2E),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(2, 0),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Logo Section
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1),
-                borderRadius: BorderRadius.circular(12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.2),
+                  Colors.white.withOpacity(0.1),
+                ],
               ),
-              child: const Icon(
-                Icons.dashboard_rounded,
-                color: Colors.white,
-                size: 24,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
               ),
             ),
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // Menu Items
-          _buildMenuItem(
-            icon: Icons.assessment_outlined,
-            index: 0,
-            tooltip: 'Rekap Absensi',
-          ),
-          
-          const SizedBox(height: 8),
-          
-          _buildMenuItem(
-            icon: Icons.history_rounded,
-            index: 1,
-            tooltip: 'Historis Absensi',
-          ),
-          
-          const Spacer(),
-          
-          // Bottom Section (Optional - bisa untuk settings atau profile)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: IconButton(
-              icon: const Icon(
-                Icons.settings_outlined,
-                color: Color(0xFF9CA3AF),
-              ),
-              onPressed: () {},
-              tooltip: 'Settings',
+            child: Column(
+              children: [
+                const SizedBox(height: 24),
+                // Logo Section
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF667eea),
+                        Color(0xFF764ba2),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF667eea).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.dashboard_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Menu Items
+                _buildMenuItem(
+                  icon: Icons.assessment_outlined,
+                  index: 0,
+                  tooltip: 'Rekap Absensi',
+                ),
+                
+                const SizedBox(height: 12),
+                
+                _buildMenuItem(
+                  icon: Icons.history_rounded,
+                  index: 1,
+                  tooltip: 'Historis Absensi',
+                ),
+                
+                const Spacer(),
+                
+                // Bottom Section
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.settings_outlined,
+                        color: Colors.white.withOpacity(0.8),
+                        size: 22,
+                      ),
+                      onPressed: () {},
+                      tooltip: 'Settings',
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -92,20 +138,39 @@ class Sidebar extends StatelessWidget {
       preferBelow: false,
       child: InkWell(
         onTap: () => onMenuSelected(index),
-        child: Container(
-          width: 50,
-          height: 50,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
-            color: isSelected 
-                ? const Color(0xFF6366F1) 
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            gradient: isSelected
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF667eea),
+                      Color(0xFF764ba2),
+                    ],
+                  )
+                : null,
+            color: isSelected ? null : Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF667eea).withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
           child: Icon(
             icon,
             color: isSelected 
                 ? Colors.white 
-                : const Color(0xFF9CA3AF),
+                : Colors.white.withOpacity(0.6),
             size: 24,
           ),
         ),

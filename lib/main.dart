@@ -17,8 +17,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: const Color(0xFFF5F5F7),
+        scaffoldBackgroundColor: Colors.transparent,
         fontFamily: 'Inter',
+        textTheme: const TextTheme(
+          headlineMedium: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
+          ),
+        ),
       ),
       home: const MainScreen(),
     );
@@ -43,22 +50,37 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          // Sidebar
-          Sidebar(
-            selectedIndex: _selectedIndex,
-            onMenuSelected: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF667eea),
+              Color(0xFF764ba2),
+              Color(0xFFf093fb),
+              Color(0xFF4facfe),
+            ],
+            stops: [0.0, 0.3, 0.7, 1.0],
           ),
-          // Main Content
-          Expanded(
-            child: _screens[_selectedIndex],
-          ),
-        ],
+        ),
+        child: Row(
+          children: [
+            // Sidebar
+            Sidebar(
+              selectedIndex: _selectedIndex,
+              onMenuSelected: (index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+            ),
+            // Main Content
+            Expanded(
+              child: _screens[_selectedIndex],
+            ),
+          ],
+        ),
       ),
     );
   }

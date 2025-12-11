@@ -4,6 +4,7 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:excel/excel.dart' hide Border, TextSpan;
 import 'dart:io';
+import 'dart:ui';
 import '../models/department.dart';
 import '../models/employee.dart';
 import '../models/attendance_record.dart';
@@ -26,29 +27,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF5F5F7),
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Text(
-            'Rekap Absensi Karyawan',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1F2937),
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Upload file Excel absensi untuk melihat rekap kehadiran dan keterlambatan',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
+          // Header with glassy background
+          _buildGlassyHeader(context),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
           // Upload Area
           Expanded(
@@ -57,199 +43,434 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 children: [
                   // Drag & Drop Area
                   if (_summaries.isEmpty)
-                    DropTarget(
-                      onDragDone: (detail) async {
-                        setState(() {
-                          _isDragging = false;
-                        });
-
-                        for (var file in detail.files) {
-                          if (file.path.endsWith('.xlsx') ||
-                              file.path.endsWith('.xls')) {
-                            await _processExcelFile(file.path);
-                          }
-                        }
-                      },
-                      onDragEntered: (detail) {
-                        setState(() {
-                          _isDragging = true;
-                        });
-                      },
-                      onDragExited: (detail) {
-                        setState(() {
-                          _isDragging = false;
-                        });
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(48),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: _isDragging
-                                ? const Color(0xFF6366F1)
-                                : Colors.grey[300]!,
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.upload_file_rounded,
-                              size: 64,
-                              color: _isDragging
-                                  ? const Color(0xFF6366F1)
-                                  : const Color(0xFFFFB84D),
-                            ),
-                            const SizedBox(height: 16),
-                            RichText(
-                              text: TextSpan(
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[700],
-                                ),
-                                children: [
-                                  const TextSpan(text: 'Drop your files here or '),
-                                  WidgetSpan(
-                                    child: InkWell(
-                                      onTap: _pickFile,
-                                      child: const Text(
-                                        'click here',
-                                        style: TextStyle(
-                                          color: Color(0xFF6366F1),
-                                          fontWeight: FontWeight.w600,
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const TextSpan(text: ' to upload'),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Upload Excel file (.xlsx, .xls)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[500],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    _buildUploadArea(),
 
                   // Summary Table
-                  if (_summaries.isNotEmpty) ...[
+                  if (_summaries.isNotEmpty)
+                    _buildGlassySummaryCard(),
+
+                  if (_isProcessing)
+                    _buildProcessingIndicator(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlassyHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.15),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
                     Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
+                            color: const Color(0xFF667eea).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
+                      child: const Icon(
+                        Icons.assessment_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Rekap Absensi',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey[900],
-                                    ),
-                                  ),
-                                  if (_currentFileName != null)
-                                    Text(
-                                      'File: $_currentFileName',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    '${_summaries.length} karyawan',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  ElevatedButton.icon(
-                                    onPressed: () {
-                                      setState(() {
-                                        _summaries.clear();
-                                        _currentFileName = null;
-                                      });
-                                    },
-                                    icon: const Icon(Icons.refresh, size: 16),
-                                    label: const Text('Upload Baru'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF6366F1),
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          _buildSummaryTable(),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  if (_isProcessing)
-                    Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          const CircularProgressIndicator(),
-                          const SizedBox(height: 16),
                           Text(
-                            'Memproses file Excel...',
+                            'Rekap Absensi Karyawan',
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Upload file Excel absensi untuk melihat rekap kehadiran dan keterlambatan',
                             style: TextStyle(
-                              color: Colors.grey[600],
+                              color: Colors.white.withOpacity(0.9),
                               fontSize: 14,
                             ),
                           ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUploadArea() {
+    return DropTarget(
+      onDragDone: (detail) async {
+        setState(() {
+          _isDragging = false;
+        });
+
+        for (var file in detail.files) {
+          if (file.path.endsWith('.xlsx') ||
+              file.path.endsWith('.xls')) {
+            await _processExcelFile(file.path);
+          }
+        }
+      },
+      onDragEntered: (detail) {
+        setState(() {
+          _isDragging = true;
+        });
+      },
+      onDragExited: (detail) {
+        setState(() {
+          _isDragging = false;
+        });
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(48),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.all(48),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.25),
+                    Colors.white.withOpacity(0.15),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: _isDragging
+                      ? Colors.white.withOpacity(0.5)
+                      : Colors.white.withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: _isDragging
+                            ? [
+                                const Color(0xFF667eea),
+                                const Color(0xFF764ba2),
+                              ]
+                            : [
+                                const Color(0xFFf093fb),
+                                const Color(0xFFf5576c),
+                              ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (_isDragging
+                                  ? const Color(0xFF667eea)
+                                  : const Color(0xFFf093fb))
+                              .withOpacity(0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.cloud_upload_rounded,
+                      size: 48,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                      children: [
+                        const TextSpan(text: 'Drop your files here or '),
+                        WidgetSpan(
+                          child: InkWell(
+                            onTap: _pickFile,
+                            child: Text(
+                              'click here',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const TextSpan(text: ' to upload'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Upload Excel file (.xlsx, .xls)',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassySummaryCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.15),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Rekap Absensi',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        if (_currentFileName != null)
+                          Text(
+                            'File: $_currentFileName',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withOpacity(0.3),
+                                Colors.white.withOpacity(0.2),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${_summaries.length} karyawan',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _summaries.clear();
+                              _currentFileName = null;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF667eea),
+                                  Color(0xFF764ba2),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF667eea).withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: const [
+                                Icon(Icons.refresh, size: 16, color: Colors.white),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Upload Baru',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _buildSummaryTable(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProcessingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.3),
+                  Colors.white.withOpacity(0.2),
+                ],
+              ),
+            ),
+            child: const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Memproses file Excel...',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -270,151 +491,227 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildEmployeeCard(AttendanceSummary summary, int index) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          childrenPadding: const EdgeInsets.all(16),
-          leading: CircleAvatar(
-            backgroundColor: Colors.blue[100],
-            child: Text(
-              '${index + 1}',
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.bold,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.3),
+                  Colors.white.withOpacity(0.2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.4),
+                width: 1.5,
+              ),
+            ),
+            child: Theme(
+              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                childrenPadding: const EdgeInsets.all(20),
+                leading: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF667eea),
+                        Color(0xFF764ba2),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF667eea).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ),
+                title: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            summary.employee.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.white.withOpacity(0.3),
+                                      Colors.white.withOpacity(0.2),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  summary.employee.userId,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.white.withOpacity(0.3),
+                                      Colors.white.withOpacity(0.2),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  summary.employee.department.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 3,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildStat(
+                            Icons.access_time,
+                            summary.totalMasukFormatted,
+                            const Color(0xFF4ade80),
+                            'Masuk',
+                          ),
+                          _buildStat(
+                            Icons.warning_amber_rounded,
+                            summary.totalTelatFormatted,
+                            const Color(0xFFfbbf24),
+                            'Telat',
+                          ),
+                          _buildStat(
+                            Icons.nights_stay,
+                            summary.totalLemburFormatted,
+                            const Color(0xFF818cf8),
+                            'Lembur',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white.withOpacity(0.8),
+                children: [
+                  _buildDetailView(summary),
+                ],
               ),
             ),
           ),
-          title: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      summary.employee.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Colors.grey[900],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            summary.employee.userId,
-                            style: TextStyle(
-                              color: Colors.blue[700],
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.purple[50],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            summary.employee.department.name,
-                            style: TextStyle(
-                              color: Colors.purple[700],
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 3,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStat(
-                      Icons.access_time,
-                      summary.totalMasukFormatted,
-                      Colors.green[700]!,
-                      'Masuk',
-                    ),
-                    _buildStat(
-                      Icons.warning_amber_rounded,
-                      summary.totalTelatFormatted,
-                      Colors.orange[700]!,
-                      'Telat',
-                    ),
-                    _buildStat(
-                      Icons.nights_stay,
-                      summary.totalLemburFormatted,
-                      Colors.indigo[700]!,
-                      'Lembur',
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          children: [
-            _buildDetailView(summary),
-          ],
         ),
       ),
     );
   }
 
   Widget _buildStat(IconData icon, String value, Color color, String label) {
-    return Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 4),
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.25),
+            Colors.white.withOpacity(0.15),
           ],
         ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 10,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Text(
+                value,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -469,10 +766,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.15),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -480,7 +782,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           _buildDetailSection(
             'Rincian Keterlambatan',
             Icons.warning_amber_rounded,
-            Colors.orange[700]!,
+            const Color(0xFFfbbf24),
             lateDetails.isEmpty
                 ? [_buildEmptyState('Tidak ada keterlambatan')]
                 : lateDetails.map((detail) {
@@ -492,7 +794,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
                       'Masuk jam ${detail['checkInTime']}',
                       'Telat: $timeStr',
-                      Colors.orange[100]!,
+                      const Color(0xFFfbbf24),
                     );
                   }).toList(),
           ),
@@ -501,7 +803,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           _buildDetailSection(
             'Rincian Lembur',
             Icons.nights_stay,
-            Colors.indigo[700]!,
+            const Color(0xFF818cf8),
             overtimeDetails.isEmpty
                 ? [_buildEmptyState('Tidak ada lembur')]
                 : overtimeDetails.map((detail) {
@@ -513,7 +815,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
                       'Pulang jam ${detail['checkOutTime']}',
                       'Lembur: $timeStr',
-                      Colors.indigo[100]!,
+                      const Color(0xFF818cf8),
                     );
                   }).toList(),
           ),
@@ -522,7 +824,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           _buildDetailSection(
             'Rincian Izin/Sakit',
             Icons.sick,
-            Colors.red[700]!,
+            const Color(0xFFf87171),
             absenceDetails.isEmpty
                 ? [_buildEmptyState('Tidak ada izin/sakit')]
                 : absenceDetails.map((detail) {
@@ -546,19 +848,32 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-                color: color,
-              ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.15),
+              ],
             ),
-          ],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         ...children,
@@ -570,14 +885,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     String date,
     String time,
     String duration,
-    Color bgColor,
+    Color color,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.2),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
@@ -588,7 +912,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: 13,
-                color: Colors.grey[800],
+                color: Colors.white.withOpacity(0.95),
               ),
             ),
           ),
@@ -598,20 +922,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               time,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey[700],
+                color: Colors.white.withOpacity(0.85),
               ),
             ),
           ),
           Expanded(
             flex: 1,
-            child: Text(
-              duration,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-                color: Colors.grey[900],
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
               ),
-              textAlign: TextAlign.right,
+              child: Text(
+                duration,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ],
@@ -623,19 +954,25 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.15),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: Row(
         children: [
-          Icon(Icons.check_circle_outline, color: Colors.grey[400], size: 20),
-          const SizedBox(width: 8),
+          Icon(Icons.check_circle_outline, color: Colors.white.withOpacity(0.6), size: 20),
+          const SizedBox(width: 12),
           Text(
             message,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: Colors.white.withOpacity(0.8),
               fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -645,11 +982,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Widget _buildAbsenceRow(String date, AttendanceRecord record) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.2),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFf87171).withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -662,45 +1008,50 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 13,
-                    color: Colors.grey[800],
+                    color: Colors.white.withOpacity(0.95),
                   ),
                 ),
               ),
-              Icon(Icons.event_busy, size: 16, color: Colors.red[700]),
+              Icon(Icons.event_busy, size: 16, color: const Color(0xFFf87171)),
             ],
           ),
-          const SizedBox(height: 8),
-          TextField(
-            key: ValueKey('absence_${record.date.toIso8601String()}'),
-            controller: TextEditingController.fromValue(
-              TextEditingValue(
-                text: record.notes ?? '',
-                selection: TextSelection.collapsed(offset: (record.notes ?? '').length),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextField(
+                  key: ValueKey('absence_${record.date.toIso8601String()}'),
+                  controller: TextEditingController.fromValue(
+                    TextEditingValue(
+                      text: record.notes ?? '',
+                      selection: TextSelection.collapsed(offset: (record.notes ?? '').length),
+                    ),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Keterangan (Sakit/Izin)',
+                    hintStyle: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.5)),
+                    filled: false,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: const Color(0xFFf87171).withOpacity(0.5)),
+                    ),
+                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.95)),
+                  onChanged: (value) {
+                    record.notes = value;
+                  },
+                ),
               ),
             ),
-            decoration: InputDecoration(
-              hintText: 'Keterangan (Sakit/Izin)',
-              hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.red[400]!),
-              ),
-            ),
-            style: const TextStyle(fontSize: 12),
-            onChanged: (value) {
-              record.notes = value;
-            },
           ),
         ],
       ),
