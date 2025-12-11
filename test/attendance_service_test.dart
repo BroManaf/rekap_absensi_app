@@ -228,7 +228,7 @@ void main() {
     });
 
     test('Process daily attendance - Checkout at 16:30 (between shifts)', () {
-      // Checkout between 16:00 and 17:00 should count only up to 16:00, no overtime
+      // Checkout between 16:00 and 17:00 (exclusive) should count only up to 16:00, no overtime
       final department = Department.fromString('Quarry');
       final record = AttendanceRecord(
         date: DateTime(2024, 1, 1),
@@ -261,8 +261,8 @@ void main() {
       expect(result['lembur'], equals(61));
     });
 
-    test('Process daily attendance - Checkout at exactly 17:00 (overtime threshold)', () {
-      // Checkout at 17:00 exactly triggers overtime (threshold met)
+    test('Process daily attendance - Checkout at exactly 17:00 (meets overtime threshold)', () {
+      // Checkout at 17:00 exactly meets overtime threshold
       // Overtime calculated from 16:00
       final department = Department.fromString('Quarry');
       final record = AttendanceRecord(

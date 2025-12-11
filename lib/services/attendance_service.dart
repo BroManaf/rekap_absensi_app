@@ -68,11 +68,11 @@ class AttendanceService {
   /// Calculate work duration considering department start time and shifts
   /// 
   /// NEW LOGIC:
-  /// - Afternoon shift ends at 16:00
-  /// - Overtime threshold: must reach 17:00 to count as overtime
+  /// - Afternoon shift ends at 16:00 (960 minutes)
+  /// - Overtime threshold: must reach 17:00 (1020 minutes) to count as overtime
   /// - If checkout is before 17:00, no overtime is counted
   /// - If checkout is at or after 17:00, overtime is calculated from 16:00
-  ///   * Regular hours: checkIn to 16:00 (960 minutes)
+  ///   * Regular hours: checkIn to 16:00
   ///   * Overtime hours: 16:00 to checkOut
   /// 
   /// Returns a Map with 'regular' and 'overtime' keys containing minutes
