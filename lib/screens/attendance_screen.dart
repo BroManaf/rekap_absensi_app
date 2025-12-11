@@ -258,209 +258,378 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildSummaryTable() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        headingRowColor: WidgetStateProperty.all(
-          const Color(0xFFF9FAFB),
-        ),
-        columns: [
-          DataColumn(
-            label: Text(
-              'No',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
-              ),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Nama Karyawan',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
-              ),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'User ID',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
-              ),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Department',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
-              ),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Total Masuk',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
-              ),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Total Telat',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
-              ),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Total Lembur',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
-              ),
-            ),
-          ),
-        ],
-        rows: _summaries.asMap().entries.map((entry) {
-          int index = entry.key;
-          AttendanceSummary summary = entry.value;
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _summaries.length,
+      itemBuilder: (context, index) {
+        final summary = _summaries[index];
+        return _buildEmployeeCard(summary, index);
+      },
+    );
+  }
 
-          return DataRow(
-            color: WidgetStateProperty.resolveWith<Color?>(
-              (Set<WidgetState> states) {
-                if (index.isEven) {
-                  return Colors.grey[50];
-                }
-                return null;
-              },
+  Widget _buildEmployeeCard(AttendanceSummary summary, int index) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          childrenPadding: const EdgeInsets.all(16),
+          leading: CircleAvatar(
+            backgroundColor: Colors.blue[100],
+            child: Text(
+              '${index + 1}',
+              style: TextStyle(
+                color: Colors.blue[700],
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            cells: [
-              DataCell(
-                Text(
-                  '${index + 1}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              DataCell(
-                Text(
-                  summary.employee.name,
-                  style: TextStyle(
-                    color: Colors.grey[800],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              DataCell(
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    summary.employee.userId,
-                    style: TextStyle(
-                      color: Colors.blue[700],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-              DataCell(
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.purple[50],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    summary.employee.department.name,
-                    style: TextStyle(
-                      color: Colors.purple[700],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-              DataCell(
-                Row(
+          ),
+          title: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
+                    Text(
+                      summary.employee.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.grey[900],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            summary.employee.userId,
+                            style: TextStyle(
+                              color: Colors.blue[700],
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.purple[50],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            summary.employee.department.name,
+                            style: TextStyle(
+                              color: Colors.purple[700],
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 3,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStat(
                       Icons.access_time,
-                      size: 16,
-                      color: Colors.green[700],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
                       summary.totalMasukFormatted,
-                      style: TextStyle(
-                        color: Colors.green[700],
-                        fontWeight: FontWeight.w600,
-                      ),
+                      Colors.green[700]!,
+                      'Masuk',
                     ),
-                  ],
-                ),
-              ),
-              DataCell(
-                Row(
-                  children: [
-                    Icon(
+                    _buildStat(
                       Icons.warning_amber_rounded,
-                      size: 16,
-                      color: Colors.orange[700],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
                       summary.totalTelatFormatted,
-                      style: TextStyle(
-                        color: Colors.orange[700],
-                        fontWeight: FontWeight.w600,
-                      ),
+                      Colors.orange[700]!,
+                      'Telat',
                     ),
-                  ],
-                ),
-              ),
-              DataCell(
-                Row(
-                  children: [
-                    Icon(
+                    _buildStat(
                       Icons.nights_stay,
-                      size: 16,
-                      color: Colors.indigo[700],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
                       summary.totalLemburFormatted,
-                      style: TextStyle(
-                        color: Colors.indigo[700],
-                        fontWeight: FontWeight.w600,
-                      ),
+                      Colors.indigo[700]!,
+                      'Lembur',
                     ),
                   ],
                 ),
               ),
             ],
-          );
-        }).toList(),
+          ),
+          children: [
+            _buildDetailView(summary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStat(IconData icon, String value, Color color, String label) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 10,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailView(AttendanceSummary summary) {
+    // Process records to get late and overtime details
+    final lateDetails = <Map<String, dynamic>>[];
+    final overtimeDetails = <Map<String, dynamic>>[];
+
+    for (var record in summary.records) {
+      if (record.hasData) {
+        final daily = AttendanceService.processDailyAttendance(
+          record,
+          summary.employee.department,
+        );
+        
+        final telat = daily['telat'] ?? 0;
+        final lembur = daily['lembur'] ?? 0;
+
+        // Collect late details
+        if (telat > 0) {
+          // Find actual check-in time
+          String? checkInTime;
+          if (record.jamMasukPagi != null) {
+            checkInTime = record.jamMasukPagi;
+          } else if (record.jamMasukSiang != null) {
+            checkInTime = record.jamMasukSiang;
+          }
+
+          lateDetails.add({
+            'date': record.date,
+            'dayOfWeek': record.dayOfWeek ?? '-',
+            'checkInTime': checkInTime ?? '-',
+            'lateMinutes': telat,
+          });
+        }
+
+        // Collect overtime details
+        if (lembur > 0) {
+          // Find final check-out time
+          String? checkOutTime;
+          if (record.jamMasukLembur != null) {
+            checkOutTime = record.jamMasukLembur;
+          } else if (record.jamKeluarSiang != null) {
+            checkOutTime = record.jamKeluarSiang;
+          } else if (record.jamKeluarPagi != null) {
+            checkOutTime = record.jamKeluarPagi;
+          }
+
+          overtimeDetails.add({
+            'date': record.date,
+            'dayOfWeek': record.dayOfWeek ?? '-',
+            'checkOutTime': checkOutTime ?? '-',
+            'overtimeMinutes': lembur,
+          });
+        }
+      }
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Late Details Section
+          _buildDetailSection(
+            'Rincian Keterlambatan',
+            Icons.warning_amber_rounded,
+            Colors.orange[700]!,
+            lateDetails.isEmpty
+                ? [_buildEmptyState('Tidak ada keterlambatan')]
+                : lateDetails.map((detail) {
+                    final hours = detail['lateMinutes'] ~/ 60;
+                    final minutes = detail['lateMinutes'] % 60;
+                    final timeStr = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
+                    
+                    return _buildDetailRow(
+                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
+                      'Masuk jam ${detail['checkInTime']}',
+                      'Telat: $timeStr',
+                      Colors.orange[100]!,
+                    );
+                  }).toList(),
+          ),
+          const SizedBox(height: 16),
+          // Overtime Details Section
+          _buildDetailSection(
+            'Rincian Lembur',
+            Icons.nights_stay,
+            Colors.indigo[700]!,
+            overtimeDetails.isEmpty
+                ? [_buildEmptyState('Tidak ada lembur')]
+                : overtimeDetails.map((detail) {
+                    final hours = detail['overtimeMinutes'] ~/ 60;
+                    final minutes = detail['overtimeMinutes'] % 60;
+                    final timeStr = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
+                    
+                    return _buildDetailRow(
+                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
+                      'Pulang jam ${detail['checkOutTime']}',
+                      'Lembur: $timeStr',
+                      Colors.indigo[100]!,
+                    );
+                  }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailSection(
+    String title,
+    IconData icon,
+    Color color,
+    List<Widget> children,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...children,
+      ],
+    );
+  }
+
+  Widget _buildDetailRow(
+    String date,
+    String time,
+    String duration,
+    Color bgColor,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              date,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+                color: Colors.grey[800],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              time,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Text(
+              duration,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: Colors.grey[900],
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle_outline, color: Colors.grey[400], size: 20),
+          const SizedBox(width: 8),
+          Text(
+            message,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 13,
+            ),
+          ),
+        ],
       ),
     );
   }

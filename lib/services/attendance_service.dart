@@ -278,6 +278,7 @@ class AttendanceService {
       totalMasukMinutes: totalMasuk,
       totalTelatMinutes: totalTelat,
       totalLemburMinutes: totalLembur,
+      records: records,
     );
   }
 
