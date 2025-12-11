@@ -319,6 +319,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ),
             ),
           ),
+          DataColumn(
+            label: Text(
+              'Total Lembur',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[900],
+              ),
+            ),
+          ),
         ],
         rows: _summaries.asMap().entries.map((entry) {
           int index = entry.key;
@@ -424,6 +433,25 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       summary.totalTelatFormatted,
                       style: TextStyle(
                         color: Colors.orange[700],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              DataCell(
+                Row(
+                  children: [
+                    Icon(
+                      Icons.nights_stay,
+                      size: 16,
+                      color: Colors.indigo[700],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      summary.totalLemburFormatted,
+                      style: TextStyle(
+                        color: Colors.indigo[700],
                         fontWeight: FontWeight.w600,
                       ),
                     ),

@@ -73,8 +73,10 @@ class AttendanceService {
   /// - Time between 16:00 and 17:01 is not counted as work time
   /// - If checkout is after 17:01, split calculation:
   ///   * Regular hours: checkIn to 16:00 (960 minutes)
-  ///   * Overtime hours: 17:01 to checkOut
-  static int calculateWorkDuration(
+  ///   * Overtime hours: 17:00 to checkOut
+  /// 
+  /// Returns a Map with 'regular' and 'overtime' keys containing minutes
+  static Map<String, int> calculateWorkDuration(
     int checkInTime,
     int checkOutTime,
     TimeOfDay departmentStartTime,
@@ -91,17 +93,17 @@ class AttendanceService {
     // Case 1: Checkout before or at 16:00 - simple calculation
     if (checkOutTime <= afternoonEndMinutes) {
       if (checkOutTime > effectiveStart) {
-        return checkOutTime - effectiveStart;
+        return {'regular': checkOutTime - effectiveStart, 'overtime': 0};
       }
-      return 0;
+      return {'regular': 0, 'overtime': 0};
     }
     
     // Case 2: Checkout between 16:00 and 17:01 - count up to 16:00 only
     if (checkOutTime > afternoonEndMinutes && checkOutTime < overtimeStartMinutes) {
       if (afternoonEndMinutes > effectiveStart) {
-        return afternoonEndMinutes - effectiveStart;
+        return {'regular': afternoonEndMinutes - effectiveStart, 'overtime': 0};
       }
-      return 0;
+      return {'regular': 0, 'overtime': 0};
     }
     
     // Case 3: Checkout at or after 17:01 - split calculation
@@ -120,7 +122,7 @@ class AttendanceService {
       overtimeHours = checkOutTime - overtimeBase;
     }
     
-    return regularHours + overtimeHours;
+    return {'regular': regularHours, 'overtime': overtimeHours};
   }
 
   /// Process a single day's attendance record
@@ -129,6 +131,7 @@ class AttendanceService {
   /// - jamMasukLembur now represents the actual clock-out time (not overtime clock-in)
   /// - jamKeluarLembur is no longer used in calculations
   /// - Overtime starts from 17:01 onwards
+  /// - Returns separate values for regular work time and overtime
   /// 
   /// TODO: Remove debug logging after validating the fix with actual Excel data
   static Map<String, int> processDailyAttendance(
@@ -147,6 +150,7 @@ class AttendanceService {
     
     int dailyMasuk = 0;
     int dailyTelat = 0;
+    int dailyLembur = 0;
 
     // Find first check-in and last check-out for the day
     int? firstCheckIn;
@@ -199,18 +203,21 @@ class AttendanceService {
 
     // Calculate work duration if there's both check-in and check-out
     if (firstCheckIn != null && lastCheckOut != null) {
-      dailyMasuk = calculateWorkDuration(firstCheckIn, lastCheckOut, department.jamMasuk);
+      final duration = calculateWorkDuration(firstCheckIn, lastCheckOut, department.jamMasuk);
+      dailyMasuk = duration['regular'] ?? 0;
+      dailyLembur = duration['overtime'] ?? 0;
       if (kDebugMode) {
-        print('[DEBUG]   dailyMasuk=$dailyMasuk minutes');
+        print('[DEBUG]   dailyMasuk=$dailyMasuk minutes, dailyLembur=$dailyLembur minutes');
       }
     }
 
     if (kDebugMode) {
-      print('[DEBUG]   Result: masuk=$dailyMasuk, telat=$dailyTelat');
+      print('[DEBUG]   Result: masuk=$dailyMasuk, telat=$dailyTelat, lembur=$dailyLembur');
     }
     return {
       'masuk': dailyMasuk,
       'telat': dailyTelat,
+      'lembur': dailyLembur,
     };
   }
 
@@ -226,22 +233,25 @@ class AttendanceService {
     }
     int totalMasuk = 0;
     int totalTelat = 0;
+    int totalLembur = 0;
 
     for (var record in records) {
       if (record.hasData) {
         final daily = processDailyAttendance(record, employee.department);
         totalMasuk += daily['masuk'] ?? 0;
         totalTelat += daily['telat'] ?? 0;
+        totalLembur += daily['lembur'] ?? 0;
       }
     }
 
     if (kDebugMode) {
-      print('[DEBUG] calculateSummary: FINAL totalMasuk=$totalMasuk, totalTelat=$totalTelat');
+      print('[DEBUG] calculateSummary: FINAL totalMasuk=$totalMasuk, totalTelat=$totalTelat, totalLembur=$totalLembur');
     }
     return AttendanceSummary(
       employee: employee,
       totalMasukMinutes: totalMasuk,
       totalTelatMinutes: totalTelat,
+      totalLemburMinutes: totalLembur,
     );
   }
 
