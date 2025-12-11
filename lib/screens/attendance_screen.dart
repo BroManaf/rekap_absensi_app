@@ -385,10 +385,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             TextSpan(text: summary.employee.name),
                             TextSpan(
                               text: ' (${summary.employee.userId})',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
+                                color: Color(0xFF6B7280), // grey[700]
                               ),
                             ),
                           ],
@@ -398,9 +398,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       // Department on second line
                       Text(
                         summary.employee.department.name,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: Color(0xFF6B7280), // grey[600]
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -440,7 +440,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 Expanded(
                   flex: 1,
                   child: Text(
-                    '${summary.totalLemburMinutes ~/ 60}h ${summary.totalLemburMinutes % 60}m',
+                    summary.totalLemburSimple,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
