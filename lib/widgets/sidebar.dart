@@ -6,8 +6,8 @@ class Sidebar extends StatelessWidget {
 
   const Sidebar({
     super.key,
-    required this. selectedIndex,
-    required this. onMenuSelected,
+    required this.selectedIndex,
+    required this.onMenuSelected,
   });
 
   @override
@@ -38,7 +38,7 @@ class Sidebar extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.dashboard_rounded,
-                color: Colors. white,
+                color: Colors.white,
                 size: 24,
               ),
             ),
@@ -56,16 +56,8 @@ class Sidebar extends StatelessWidget {
           const SizedBox(height: 8),
           
           _buildMenuItem(
-            icon: Icons.file_download_outlined,
-            index: 1,
-            tooltip: 'Export Excel',
-          ),
-          
-          const SizedBox(height: 8),
-          
-          _buildMenuItem(
             icon: Icons.history_rounded,
-            index: 2,
+            index: 1,
             tooltip: 'Historis Absensi',
           ),
           

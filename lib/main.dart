@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/attendance_screen.dart';
-import 'screens/export_excel_screen.dart';
 import 'screens/historis_absensi_screen.dart';
 import 'widgets/sidebar.dart';
 
@@ -27,7 +26,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super. key});
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -38,7 +37,6 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const AttendanceScreen(),
-    const ExportExcelScreen(),
     const HistorisAbsensiScreen(),
   ];
 
