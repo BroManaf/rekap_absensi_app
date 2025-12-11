@@ -113,7 +113,7 @@ class AttendanceService {
       regularHours = afternoonEndMinutes - effectiveStart;
     }
     
-    // Overtime hours: 17:01 to checkOut (but count from 17:00 for simplicity)
+    // Overtime hours: 17:01 to checkOut (calculated from 17:00 for simplicity)
     // Note: Overtime period starts at 17:01, but we use 17:00 (1020) as the base 
     // for calculation as per requirement: "lembur dihitung mulai dari jam 17:00"
     const overtimeBase = 17 * 60; // 17:00 = 1020 minutes

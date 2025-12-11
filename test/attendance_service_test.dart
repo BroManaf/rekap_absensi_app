@@ -156,7 +156,7 @@ void main() {
     test('Process daily attendance - Quarry employee with overtime (Example from problem statement)', () {
       // Example from problem statement:
       // Quarry employee: clock in at 08:00, clock out at 20:00
-      // Expected: LamaTelat = 1 hour (60 min), LamaMasuk = 8 hours (480 min), LamaTembur = 3 hours (180 min)
+      // Expected: LamaTelat = 1 hour (60 min), LamaMasuk = 8 hours (480 min), LamaLembur = 3 hours (180 min)
       // Breakdown:
       // - Regular hours: 08:00 to 16:00 = 8 hours (480 min)
       // - Gap: 16:00 to 17:00 = NOT COUNTED
@@ -286,12 +286,13 @@ void main() {
       // Example from problem statement:
       // Quarry employee: clock in at 07:00, leaves at 16:30, has lembur data at 20:00
       // Expected: Total Telat = 0, Total Masuk = 9 hours (540 min), Total Lembur = 3 hours (180 min)
+      // Note: jamMasukLembur (20:00) takes precedence as the final clock-out time
       final department = Department.fromString('Quarry');
       final record = AttendanceRecord(
         date: DateTime(2024, 1, 1),
         jamMasukPagi: '07:00',
-        jamKeluarSiang: '16:30', // This intermediate checkout is ignored
-        jamMasukLembur: '20:00', // Final clock-out time
+        jamKeluarSiang: '16:30', // Intermediate checkout (ignored when jamMasukLembur is present)
+        jamMasukLembur: '20:00', // Final clock-out time (takes precedence)
       );
 
       final result = AttendanceService.processDailyAttendance(record, department);
