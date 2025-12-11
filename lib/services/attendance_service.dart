@@ -260,24 +260,50 @@ class AttendanceService {
     int totalMasuk = 0;
     int totalTelat = 0;
     int totalLembur = 0;
+    int daysMasuk = 0; // Days with attendance (excluding Saturday and Sunday)
+    int daysTelat = 0; // Days the employee was late
+    int daysLembur = 0; // Days with overtime (including Sunday if applicable)
 
     for (var record in records) {
       if (record.hasData) {
         final daily = processDailyAttendance(record, employee.department);
-        totalMasuk += daily['masuk'] ?? 0;
-        totalTelat += daily['telat'] ?? 0;
-        totalLembur += daily['lembur'] ?? 0;
+        final masukMinutes = daily['masuk'] ?? 0;
+        final telatMinutes = daily['telat'] ?? 0;
+        final lemburMinutes = daily['lembur'] ?? 0;
+        
+        totalMasuk += masukMinutes;
+        totalTelat += telatMinutes;
+        totalLembur += lemburMinutes;
+        
+        // Count days: attendance days exclude Saturday and Sunday
+        if (!record.isSaturday && !record.isSunday && masukMinutes > 0) {
+          daysMasuk++;
+        }
+        
+        // Count late days
+        if (telatMinutes > 0) {
+          daysTelat++;
+        }
+        
+        // Count overtime days (including Sunday if overtime worked)
+        if (lemburMinutes > 0) {
+          daysLembur++;
+        }
       }
     }
 
     if (kDebugMode) {
       print('[DEBUG] calculateSummary: FINAL totalMasuk=$totalMasuk, totalTelat=$totalTelat, totalLembur=$totalLembur');
+      print('[DEBUG] calculateSummary: Days - masuk=$daysMasuk, telat=$daysTelat, lembur=$daysLembur');
     }
     return AttendanceSummary(
       employee: employee,
       totalMasukMinutes: totalMasuk,
       totalTelatMinutes: totalTelat,
       totalLemburMinutes: totalLembur,
+      daysMasuk: daysMasuk,
+      daysTelat: daysTelat,
+      daysLembur: daysLembur,
       records: records,
     );
   }
