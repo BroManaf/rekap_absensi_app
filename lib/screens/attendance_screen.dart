@@ -490,6 +490,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       // Define column mappings for each employee position in a sheet
       // Each sheet can have up to 3 employees
+      // Note: All employees share column B for day-of-week and columns C-G for date
+      // Note: nameCols and userIdCols are the same because UserID is on row 3, Name on row 2
       final employeeColumnMappings = [
         // Employee 1
         {
@@ -661,8 +663,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         }
       }
       
-      // Get date from columns C-G (always use employee 1's date columns)
-      // Note: Date is used only for record identification, not for calculations
+      // Get date from columns C-G (always use employee 1's date columns for all employees)
+      // Note: All employees in a sheet share the same date column as per Excel structure
+      // Date is used only for record identification, not for calculations
       // All calculations are based on time of day only
       // We use a fixed reference date to avoid issues with month boundaries
       const referenceYear = 2024;
@@ -703,14 +706,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       }
 
       // Extract time data using the mapping
-      String? jamMasukPagi1 = _getCellValue(row, mapping['jamMasukPagi'][0]);
-      String? jamMasukPagi2 = _getCellValue(row, mapping['jamMasukPagi'][1]);
+      final jamMasukPagiCols = mapping['jamMasukPagi'] as List;
+      final jamMasukSiangCols = mapping['jamMasukSiang'] as List;
+      final jamMasukLemburCols = mapping['jamMasukLembur'] as List;
+      
+      String? jamMasukPagi1 = jamMasukPagiCols.isNotEmpty ? _getCellValue(row, jamMasukPagiCols[0]) : null;
+      String? jamMasukPagi2 = jamMasukPagiCols.length > 1 ? _getCellValue(row, jamMasukPagiCols[1]) : null;
       String? jamKeluarPagi = _getCellValue(row, mapping['jamKeluarPagi']);
-      String? jamMasukSiang1 = _getCellValue(row, mapping['jamMasukSiang'][0]);
-      String? jamMasukSiang2 = _getCellValue(row, mapping['jamMasukSiang'][1]);
+      String? jamMasukSiang1 = jamMasukSiangCols.isNotEmpty ? _getCellValue(row, jamMasukSiangCols[0]) : null;
+      String? jamMasukSiang2 = jamMasukSiangCols.length > 1 ? _getCellValue(row, jamMasukSiangCols[1]) : null;
       String? jamKeluarSiang = _getCellValue(row, mapping['jamKeluarSiang']);
-      String? jamMasukLembur1 = _getCellValue(row, mapping['jamMasukLembur'][0]);
-      String? jamMasukLembur2 = _getCellValue(row, mapping['jamMasukLembur'][1]);
+      String? jamMasukLembur1 = jamMasukLemburCols.isNotEmpty ? _getCellValue(row, jamMasukLemburCols[0]) : null;
+      String? jamMasukLembur2 = jamMasukLemburCols.length > 1 ? _getCellValue(row, jamMasukLemburCols[1]) : null;
       String? jamKeluarLembur = _getCellValue(row, mapping['jamKeluarLembur']);
 
       // Use first non-null value for masuk pagi
