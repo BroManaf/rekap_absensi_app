@@ -66,22 +66,60 @@ class AttendanceService {
   }
 
   /// Calculate work duration considering department start time and shifts
+  /// 
+  /// NEW LOGIC:
+  /// - Afternoon shift ends at 16:00
+  /// - Overtime starts at 17:01 (17:00:01 in practice, 17*60+1 in minutes = 1021)
+  /// - Time between 16:00 and 17:01 is not counted as work time
+  /// - If checkout is after 17:01, split calculation:
+  ///   * Regular hours: checkIn to 16:00 (960 minutes)
+  ///   * Overtime hours: 17:01 to checkOut
   static int calculateWorkDuration(
     int checkInTime,
     int checkOutTime,
     TimeOfDay departmentStartTime,
   ) {
+    // Constants for shift boundaries
+    const afternoonEndMinutes = 16 * 60; // 16:00 = 960 minutes
+    const overtimeStartMinutes = 17 * 60 + 1; // 17:01 = 1021 minutes
+    
     // If employee arrives before department time, start counting from department time
     final effectiveStart = checkInTime < departmentStartTime.toMinutes() 
         ? departmentStartTime.toMinutes() 
         : checkInTime;
     
-    // Duration is from effective start to checkout
-    if (checkOutTime > effectiveStart) {
-      return checkOutTime - effectiveStart;
+    // Case 1: Checkout before or at 16:00 - simple calculation
+    if (checkOutTime <= afternoonEndMinutes) {
+      if (checkOutTime > effectiveStart) {
+        return checkOutTime - effectiveStart;
+      }
+      return 0;
     }
     
-    return 0;
+    // Case 2: Checkout between 16:00 and 17:01 - count up to 16:00 only
+    if (checkOutTime > afternoonEndMinutes && checkOutTime < overtimeStartMinutes) {
+      if (afternoonEndMinutes > effectiveStart) {
+        return afternoonEndMinutes - effectiveStart;
+      }
+      return 0;
+    }
+    
+    // Case 3: Checkout at or after 17:01 - split calculation
+    // Regular hours: effectiveStart to 16:00
+    int regularHours = 0;
+    if (afternoonEndMinutes > effectiveStart) {
+      regularHours = afternoonEndMinutes - effectiveStart;
+    }
+    
+    // Overtime hours: 17:01 to checkOut (but count from 17:00 for simplicity)
+    // Note: We use 17:00 (1020) as the base for overtime calculation as per requirement
+    const overtimeBase = 17 * 60; // 17:00 = 1020 minutes
+    int overtimeHours = 0;
+    if (checkOutTime >= overtimeStartMinutes) {
+      overtimeHours = checkOutTime - overtimeBase;
+    }
+    
+    return regularHours + overtimeHours;
   }
 
   /// Process a single day's attendance record
