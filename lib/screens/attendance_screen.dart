@@ -671,7 +671,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
           const SizedBox(height: 8),
           TextField(
-            controller: TextEditingController(text: record.notes ?? ''),
+            key: ValueKey('absence_${record.date.toIso8601String()}'),
+            controller: TextEditingController.fromValue(
+              TextEditingValue(
+                text: record.notes ?? '',
+                selection: TextSelection.collapsed(offset: (record.notes ?? '').length),
+              ),
+            ),
             decoration: InputDecoration(
               hintText: 'Keterangan (Sakit/Izin)',
               hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
@@ -693,9 +699,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
             style: const TextStyle(fontSize: 12),
             onChanged: (value) {
-              setState(() {
-                record.notes = value;
-              });
+              record.notes = value;
             },
           ),
         ],
@@ -733,8 +737,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       final employeeColumnMappings = [
         // Employee 1
         {
-          'deptCols': [2, 3, 4, 5, 6], // C-G
-          'dateCols': [2, 3, 4, 5, 6], // C-G (row 3 for month detection)
+          'deptCols': [2, 3, 4, 5, 6], // C-G (also used for month detection from row 3)
           'nameCols': [8, 9, 10], // I-K
           'userIdCols': [8, 9, 10], // I-K (row 3)
           'jamMasukPagi': [2, 3], // C, D
@@ -746,8 +749,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         },
         // Employee 2
         {
-          'deptCols': [13, 14, 15, 16, 17], // N-R
-          'dateCols': [13, 14, 15, 16, 17], // N-R (row 3 for month detection)
+          'deptCols': [13, 14, 15, 16, 17], // N-R (also used for month detection from row 3)
           'nameCols': [19, 20, 21], // T-V
           'userIdCols': [19, 20, 21], // T-V (row 3)
           'jamMasukPagi': [13, 14], // N, O
@@ -759,8 +761,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         },
         // Employee 3
         {
-          'deptCols': [24, 25, 26, 27, 28], // Y-AC
-          'dateCols': [24, 25, 26, 27, 28], // Y-AC (row 3 for month detection)
+          'deptCols': [24, 25, 26, 27, 28], // Y-AC (also used for month detection from row 3)
           'nameCols': [30, 31, 32], // AE-AG
           'userIdCols': [30, 31, 32], // AE-AG (row 3)
           'jamMasukPagi': [24, 25], // Y, Z
@@ -860,10 +861,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       }
     }
 
-    // Detect month and year from row 3 (index 2) date columns
+    // Detect month and year from row 3 (index 2) using department columns
     int? year;
     int? month;
-    for (int col in mapping['dateCols']) {
+    for (int col in mapping['deptCols']) {
       if (sheet.rows.length > 2 && sheet.rows[2].length > col) {
         var cell = sheet.rows[2][col];
         if (cell != null && cell.value != null) {

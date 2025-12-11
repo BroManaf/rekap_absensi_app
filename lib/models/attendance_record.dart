@@ -7,7 +7,10 @@ class AttendanceRecord {
   final String? jamKeluarSiang;
   final String? jamMasukLembur;
   final String? jamKeluarLembur;
-  String? notes; // Editable notes for absence/sick leave
+  
+  /// Mutable field for editable absence/sick leave notes
+  /// This field is intentionally mutable to allow in-app editing
+  String? notes;
 
   AttendanceRecord({
     required this.date,
