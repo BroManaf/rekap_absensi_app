@@ -16,14 +16,27 @@ class MyApp extends StatelessWidget {
       title: 'Rekap Absensi',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: Colors.transparent,
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFFFAFBFC),
         fontFamily: 'Inter',
-        textTheme: const TextTheme(
-          headlineMedium: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6B7FFF),
+          brightness: Brightness.light,
+        ),
+        cardTheme: CardTheme(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          color: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
       ),
@@ -50,37 +63,22 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-              Color(0xFFf093fb),
-              Color(0xFF4facfe),
-            ],
-            stops: [0.0, 0.3, 0.7, 1.0],
+      body: Row(
+        children: [
+          // Sidebar
+          Sidebar(
+            selectedIndex: _selectedIndex,
+            onMenuSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
           ),
-        ),
-        child: Row(
-          children: [
-            // Sidebar
-            Sidebar(
-              selectedIndex: _selectedIndex,
-              onMenuSelected: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-            ),
-            // Main Content
-            Expanded(
-              child: _screens[_selectedIndex],
-            ),
-          ],
-        ),
+          // Main Content
+          Expanded(
+            child: _screens[_selectedIndex],
+          ),
+        ],
       ),
     );
   }

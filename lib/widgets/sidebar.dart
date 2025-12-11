@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 
 class Sidebar extends StatelessWidget {
   final int selectedIndex;
@@ -15,113 +14,74 @@ class Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 80,
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          right: BorderSide(
+            color: Color(0xFFE5E7EB),
+            width: 1,
           ),
-        ],
+        ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+      child: Column(
+        children: [
+          const SizedBox(height: 32),
+          
+          // Logo Section
+          Container(
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.2),
-                  Colors.white.withOpacity(0.1),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 1.5,
-              ),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 24),
-                // Logo Section
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF667eea),
-                        Color(0xFF764ba2),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF667eea).withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.dashboard_rounded,
-                    color: Colors.white,
-                    size: 26,
-                  ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Menu Items
-                _buildMenuItem(
-                  icon: Icons.assessment_outlined,
-                  index: 0,
-                  tooltip: 'Rekap Absensi',
-                ),
-                
-                const SizedBox(height: 12),
-                
-                _buildMenuItem(
-                  icon: Icons.history_rounded,
-                  index: 1,
-                  tooltip: 'Historis Absensi',
-                ),
-                
-                const Spacer(),
-                
-                // Bottom Section
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.settings_outlined,
-                        color: Colors.white.withOpacity(0.8),
-                        size: 22,
-                      ),
-                      onPressed: () {},
-                      tooltip: 'Settings',
-                    ),
-                  ),
+              color: const Color(0xFF6B7FFF),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6B7FFF).withOpacity(0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
+            child: const Icon(
+              Icons.insert_chart_outlined_rounded,
+              color: Colors.white,
+              size: 26,
+            ),
           ),
-        ),
+          
+          const SizedBox(height: 40),
+          
+          // Menu Items
+          _buildMenuItem(
+            icon: Icons.grid_view_rounded,
+            index: 0,
+            tooltip: 'Rekap Absensi',
+          ),
+          
+          const SizedBox(height: 16),
+          
+          _buildMenuItem(
+            icon: Icons.history_rounded,
+            index: 1,
+            tooltip: 'Historis Absensi',
+          ),
+          
+          const Spacer(),
+          
+          // Bottom Section
+          Padding(
+            padding: const EdgeInsets.only(bottom: 32),
+            child: IconButton(
+              icon: const Icon(
+                Icons.settings_outlined,
+                color: Color(0xFF9CA3AF),
+              ),
+              iconSize: 24,
+              onPressed: () {},
+              tooltip: 'Settings',
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -138,40 +98,28 @@ class Sidebar extends StatelessWidget {
       preferBelow: false,
       child: InkWell(
         onTap: () => onMenuSelected(index),
-        borderRadius: BorderRadius.circular(16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 52,
-          height: 52,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
-            gradient: isSelected
-                ? const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF667eea),
-                      Color(0xFF764ba2),
-                    ],
+            color: isSelected 
+                ? const Color(0xFF6B7FFF).withOpacity(0.1) 
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+            border: isSelected
+                ? Border.all(
+                    color: const Color(0xFF6B7FFF).withOpacity(0.2),
+                    width: 1,
                   )
                 : null,
-            color: isSelected ? null : Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF667eea).withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [],
           ),
           child: Icon(
             icon,
             color: isSelected 
-                ? Colors.white 
-                : Colors.white.withOpacity(0.6),
-            size: 24,
+                ? const Color(0xFF6B7FFF)
+                : const Color(0xFF9CA3AF),
+            size: 26,
           ),
         ),
       ),
