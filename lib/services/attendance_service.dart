@@ -287,4 +287,26 @@ class AttendanceService {
     // This will be implemented in the screen
     return [];
   }
+
+  /// Get the first check-in time from an attendance record
+  static String? getCheckInTime(AttendanceRecord record) {
+    if (record.jamMasukPagi != null) {
+      return record.jamMasukPagi;
+    } else if (record.jamMasukSiang != null) {
+      return record.jamMasukSiang;
+    }
+    return null;
+  }
+
+  /// Get the final check-out time from an attendance record
+  static String? getCheckOutTime(AttendanceRecord record) {
+    if (record.jamMasukLembur != null) {
+      return record.jamMasukLembur;
+    } else if (record.jamKeluarSiang != null) {
+      return record.jamKeluarSiang;
+    } else if (record.jamKeluarPagi != null) {
+      return record.jamKeluarPagi;
+    }
+    return null;
+  }
 }

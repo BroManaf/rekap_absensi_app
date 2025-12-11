@@ -435,13 +435,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
         // Collect late details
         if (telat > 0) {
-          // Find actual check-in time
-          String? checkInTime;
-          if (record.jamMasukPagi != null) {
-            checkInTime = record.jamMasukPagi;
-          } else if (record.jamMasukSiang != null) {
-            checkInTime = record.jamMasukSiang;
-          }
+          final checkInTime = AttendanceService.getCheckInTime(record);
 
           lateDetails.add({
             'date': record.date,
@@ -453,15 +447,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
         // Collect overtime details
         if (lembur > 0) {
-          // Find final check-out time
-          String? checkOutTime;
-          if (record.jamMasukLembur != null) {
-            checkOutTime = record.jamMasukLembur;
-          } else if (record.jamKeluarSiang != null) {
-            checkOutTime = record.jamKeluarSiang;
-          } else if (record.jamKeluarPagi != null) {
-            checkOutTime = record.jamKeluarPagi;
-          }
+          final checkOutTime = AttendanceService.getCheckOutTime(record);
 
           overtimeDetails.add({
             'date': record.date,
