@@ -5,8 +5,11 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 import '../models/attendance_summary.dart';
 import '../models/attendance_record.dart';
+import '../models/annual_recap_data.dart';
 import '../services/attendance_service.dart';
 import '../services/attendance_storage_service.dart';
+import '../services/annual_recap_service.dart';
+import '../widgets/annual_recap_table.dart';
 import '../utils/date_utils.dart' as date_utils;
 
 class HistorisAbsensiScreen extends StatefulWidget {
@@ -25,6 +28,7 @@ class HistorisAbsensiScreen extends StatefulWidget {
 
 class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
   List<AttendanceSummary> _summaries = [];
+  List<EmployeeAnnualData> _annualData = [];
   bool _isLoading = false;
   int? _currentYear;
   int? _currentMonth;
@@ -74,10 +78,12 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
       _searchController.clear();
     });
 
-    // For Annual Recap (month = 0), just set empty data
+    // For Annual Recap (month = 0), fetch annual data
     if (month == annualRecapMonth) {
+      final annualData = await AnnualRecapService.fetchAnnualData(year);
       setState(() {
         _summaries = [];
+        _annualData = annualData;
         _isLoading = false;
       });
       return;
@@ -90,6 +96,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
 
     setState(() {
       _summaries = data ?? [];
+      _annualData = [];
       _isLoading = false;
     });
   }
@@ -154,60 +161,58 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                       ],
                     ),
                   )
-                : _summaries.isEmpty
-                    ? Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
+                : _isAnnualRecap
+                    ? _buildAnnualRecapView()
+                    : _summaries.isEmpty
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.calendar_today_rounded,
-                                size: 64,
-                                color: Colors.grey[400],
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    _currentYear != null && _currentMonth != null
+                                        ? 'Tidak ada data untuk ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
+                                        : 'Pilih periode dari sidebar',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _currentYear != null && _currentMonth != null
+                                        ? 'Silakan upload dan simpan data terlebih dahulu'
+                                        : 'Klik tahun dan bulan di sidebar untuk melihat data historis',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[400],
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _currentYear != null && _currentMonth != null
-                                    ? _isAnnualRecap
-                                        ? 'Annual Recap $_currentYear'
-                                        : 'Tidak ada data untuk ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
-                                    : 'Pilih periode dari sidebar',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _currentYear != null && _currentMonth != null
-                                    ? _isAnnualRecap
-                                        ? 'Konten Annual Recap belum tersedia'
-                                        : 'Silakan upload dan simpan data terlebih dahulu'
-                                    : 'Klik tahun dan bulan di sidebar untuk melihat data historis',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[400],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        child: Container(
-                          width: double.infinity,
+                            ),
+                          )
+                        : SingleChildScrollView(
+                            child: Container(
+                              width: double.infinity,
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -1276,5 +1281,62 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
         );
       }
     }
+  }
+
+  Widget _buildAnnualRecapView() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Annual Recap',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[900],
+                    ),
+                  ),
+                  Text(
+                    'Tahun $_currentYear',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // Annual Recap Table
+          Expanded(
+            child: AnnualRecapTable(
+              employeeData: _annualData,
+              year: _currentYear!,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
