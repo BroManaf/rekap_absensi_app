@@ -254,6 +254,17 @@ None. This is a visual redesign with no changes to:
 - State management
 - External interfaces
 
+## Known Limitations
+
+### Pre-existing Patterns
+The following patterns were maintained from the original implementation to minimize scope of changes:
+
+1. **TextEditingController Recreation**: The TextField for absence notes creates a new controller on each rebuild using `TextEditingController.fromValue()`. This is a pre-existing pattern that works for the current use case but could be optimized with proper controller management if needed in the future.
+
+2. **Direct State Mutation**: The `onChanged` callback directly mutates the `record.notes` field. This bypasses proper state management but is consistent with the existing codebase pattern.
+
+These patterns were intentionally preserved to maintain minimal scope of changes focused on visual improvements only.
+
 ## Conclusion
 
 The minimalist table design successfully achieves the goal of making detail information more neat, organized, and space-efficient while preserving all functionality and improving the overall user experience. The design is consistent with modern UI/UX principles and provides a professional, clean appearance appropriate for an attendance management application.
