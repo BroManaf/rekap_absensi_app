@@ -6,6 +6,7 @@ import '../models/attendance_summary.dart';
 import '../models/attendance_record.dart';
 import '../services/attendance_service.dart';
 import '../services/attendance_storage_service.dart';
+import '../utils/date_utils.dart' as date_utils;
 
 class HistorisAbsensiScreen extends StatefulWidget {
   final int? selectedYear;
@@ -103,7 +104,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                   const SizedBox(height: 8),
                   Text(
                     _currentYear != null && _currentMonth != null
-                        ? 'Data absensi ${_getMonthName(_currentMonth!)} $_currentYear'
+                        ? 'Data absensi ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
                         : 'Pilih periode dari sidebar untuk melihat data',
                     style: TextStyle(
                       color: Colors.grey[600],
@@ -161,7 +162,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 _currentYear != null && _currentMonth != null
-                                    ? 'Tidak ada data untuk ${_getMonthName(_currentMonth!)} $_currentYear'
+                                    ? 'Tidak ada data untuk ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
                                     : 'Pilih periode dari sidebar',
                                 style: TextStyle(
                                   fontSize: 18,
@@ -216,7 +217,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '${_getMonthName(_currentMonth!)} $_currentYear',
+                                        '${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey[600],
@@ -1114,7 +1115,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
       final originalFilename = excelData['filename'] as String?;
       
       // Generate a default filename if not available
-      final defaultFilename = 'Absensi_${_getMonthName(_currentMonth!)}_$_currentYear.xlsx';
+      final defaultFilename = 'Absensi_${date_utils.DateUtils.getMonthName(_currentMonth!)}_$_currentYear.xlsx';
       final filename = originalFilename ?? defaultFilename;
 
       // Let user choose where to save the file
@@ -1169,7 +1170,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Hapus Data'),
         content: Text(
-          'Apakah Anda yakin ingin menghapus semua data absensi untuk ${_getMonthName(_currentMonth!)} $_currentYear?\n\nTindakan ini tidak dapat dibatalkan.',
+          'Apakah Anda yakin ingin menghapus semua data absensi untuk ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear?\n\nTindakan ini tidak dapat dibatalkan.',
         ),
         actions: [
           TextButton(
@@ -1229,13 +1230,5 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
         );
       }
     }
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ];
-    return months[month - 1];
   }
 }

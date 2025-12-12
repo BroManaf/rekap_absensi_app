@@ -11,6 +11,7 @@ import '../models/attendance_record.dart';
 import '../models/attendance_summary.dart';
 import '../services/attendance_service.dart';
 import '../services/attendance_storage_service.dart';
+import '../utils/date_utils.dart' as date_utils;
 
 class AttendanceScreen extends StatefulWidget {
   final VoidCallback? onDataSaved;
@@ -1177,7 +1178,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Data berhasil disimpan untuk ${_getMonthName(_dataMonth!)} $_dataYear'),
+            content: Text('Data berhasil disimpan untuk ${date_utils.DateUtils.getMonthName(_dataMonth!)} $_dataYear'),
             backgroundColor: Colors.green[600],
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
@@ -1196,14 +1197,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         );
       }
     }
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ];
-    return months[month - 1];
   }
 
   Future<void> _pickFile() async {
