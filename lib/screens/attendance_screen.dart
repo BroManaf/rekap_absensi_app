@@ -25,6 +25,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   List<AttendanceSummary> _summaries = [];
   bool _isProcessing = false;
   String? _currentFileName;
+  List<int>? _currentExcelBytes;
   final Set<int> _expandedRows = {};
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -248,6 +249,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       setState(() {
                                         _summaries.clear();
                                         _currentFileName = null;
+                                        _currentExcelBytes = null;
                                         _searchQuery = '';
                                         _searchController.clear();
                                         _dataYear = null;
@@ -1166,6 +1168,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       year: _dataYear!,
       month: _dataMonth!,
       summaries: _summaries,
+      excelFileBytes: _currentExcelBytes,
+      excelFilename: _currentFileName,
     );
 
     if (mounted) {
@@ -1224,6 +1228,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     try {
       var bytes = File(filePath).readAsBytesSync();
       var excel = Excel.decodeBytes(bytes);
+
+      // Store Excel file bytes and filename for later saving
+      _currentExcelBytes = bytes;
+      _currentFileName = filePath.split('/').last.split('\\').last;
 
       List<AttendanceSummary> summaries = [];
 
@@ -1287,7 +1295,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       setState(() {
         _summaries = summaries;
-        _currentFileName = filePath.split('/').last.split('\\').last;
       });
 
       if (mounted) {

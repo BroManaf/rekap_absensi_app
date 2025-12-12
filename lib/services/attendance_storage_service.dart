@@ -13,6 +13,8 @@ class AttendanceStorageService {
     required int year,
     required int month,
     required List<AttendanceSummary> summaries,
+    List<int>? excelFileBytes,
+    String? excelFilename,
   }) async {
     try {
       // Create key for this month/year
@@ -25,7 +27,12 @@ class AttendanceStorageService {
       final jsonData = json.encode(summariesJson);
       
       // Save to database
-      return await DatabaseService.saveData(key, jsonData);
+      return await DatabaseService.saveData(
+        key, 
+        jsonData, 
+        excelFileBytes: excelFileBytes,
+        excelFilename: excelFilename,
+      );
     } catch (e) {
       debugPrint('Error saving attendance data: $e');
       return false;
@@ -99,6 +106,20 @@ class AttendanceStorageService {
     } catch (e) {
       debugPrint('Error deleting attendance data: $e');
       return false;
+    }
+  }
+
+  /// Get Excel file for a specific year and month
+  static Future<Map<String, dynamic>?> getExcelFile({
+    required int year,
+    required int month,
+  }) async {
+    try {
+      final key = '$year-${month.toString().padLeft(2, '0')}';
+      return await DatabaseService.getExcelFile(key);
+    } catch (e) {
+      debugPrint('Error getting Excel file: $e');
+      return null;
     }
   }
 

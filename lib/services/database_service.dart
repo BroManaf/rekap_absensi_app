@@ -49,7 +49,7 @@ class DatabaseService {
     _database = await databaseFactory.openDatabase(
       _currentDatabasePath!,
       options: OpenDatabaseOptions(
-        version: 1,
+        version: 2,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       ),
@@ -63,6 +63,8 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         year_month TEXT NOT NULL UNIQUE,
         data TEXT NOT NULL,
+        excel_file BLOB,
+        excel_filename TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )
@@ -75,7 +77,11 @@ class DatabaseService {
 
   /// Handle database upgrades
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Handle future schema changes here
+    if (oldVersion < 2) {
+      // Add excel_file and excel_filename columns for version 2
+      await db.execute('ALTER TABLE attendance_data ADD COLUMN excel_file BLOB');
+      await db.execute('ALTER TABLE attendance_data ADD COLUMN excel_filename TEXT');
+    }
   }
 
   /// Get the database instance
@@ -140,7 +146,7 @@ class DatabaseService {
   }
 
   /// Save data to database
-  static Future<bool> saveData(String key, String jsonData) async {
+  static Future<bool> saveData(String key, String jsonData, {List<int>? excelFileBytes, String? excelFilename}) async {
     try {
       final db = await database;
       final now = DateTime.now().toIso8601String();
@@ -150,6 +156,8 @@ class DatabaseService {
         {
           'year_month': key,
           'data': jsonData,
+          'excel_file': excelFileBytes,
+          'excel_filename': excelFilename,
           'created_at': now,
           'updated_at': now,
         },
@@ -215,6 +223,31 @@ class DatabaseService {
     } catch (e) {
       debugPrint('Error getting all keys: $e');
       return [];
+    }
+  }
+
+  /// Get Excel file data for a specific key
+  static Future<Map<String, dynamic>?> getExcelFile(String key) async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> results = await db.query(
+        'attendance_data',
+        columns: ['excel_file', 'excel_filename'],
+        where: 'year_month = ?',
+        whereArgs: [key],
+      );
+      
+      if (results.isEmpty || results.first['excel_file'] == null) {
+        return null;
+      }
+      
+      return {
+        'bytes': results.first['excel_file'] as List<int>,
+        'filename': results.first['excel_filename'] as String?,
+      };
+    } catch (e) {
+      debugPrint('Error getting Excel file: $e');
+      return null;
     }
   }
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 import '../models/attendance_summary.dart';
 import '../models/attendance_record.dart';
 import '../services/attendance_service.dart';
@@ -231,6 +233,21 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 16),
+                                      ElevatedButton.icon(
+                                        onPressed: _downloadExcelFile,
+                                        icon: const Icon(Icons.download, size: 16),
+                                        label: const Text('Download Excel'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF10B981),
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
                                       ElevatedButton.icon(
                                         onPressed: _deleteData,
                                         icon: const Icon(Icons.delete, size: 16),
@@ -1063,6 +1080,81 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
           ),
       ],
     );
+  }
+
+  Future<void> _downloadExcelFile() async {
+    if (_currentYear == null || _currentMonth == null) {
+      return;
+    }
+
+    try {
+      // Get the Excel file from database
+      final excelData = await AttendanceStorageService.getExcelFile(
+        year: _currentYear!,
+        month: _currentMonth!,
+      );
+
+      if (excelData == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('File Excel tidak tersedia untuk periode ini'),
+              backgroundColor: Colors.orange[600],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Get the bytes and filename
+      final bytes = excelData['bytes'] as List<int>;
+      final originalFilename = excelData['filename'] as String?;
+      
+      // Generate a default filename if not available
+      final defaultFilename = 'Absensi_${_getMonthName(_currentMonth!)}_$_currentYear.xlsx';
+      final filename = originalFilename ?? defaultFilename;
+
+      // Let user choose where to save the file
+      final savePath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Simpan File Excel',
+        fileName: filename,
+        type: FileType.custom,
+        allowedExtensions: ['xlsx', 'xls'],
+      );
+
+      if (savePath == null) {
+        // User cancelled the save dialog
+        return;
+      }
+
+      // Write the file to the selected location
+      final file = File(savePath);
+      await file.writeAsBytes(bytes);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('File Excel berhasil disimpan: ${savePath.split('/').last.split('\\').last}'),
+            backgroundColor: Colors.green[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menyimpan file: $e'),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _deleteData() async {
