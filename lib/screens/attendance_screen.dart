@@ -449,18 +449,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             itemCount: _filteredSummaries.length,
             itemBuilder: (context, index) {
               final summary = _filteredSummaries[index];
-              return _buildExpandableTableRow(summary);
+              return _buildExpandableTableRow(summary, index);
             },
           ),
       ],
     );
   }
 
-  Widget _buildExpandableTableRow(AttendanceSummary summary) {
+  Widget _buildExpandableTableRow(AttendanceSummary summary, int index) {
     final employeeId = summary.employee.userId;
     final isExpanded = _expandedEmployeeIds.contains(employeeId);
-    // Use hashCode for deterministic alternating colors
-    final isEven = summary.employee.userId.hashCode % 2 == 0;
+    // Use index from filtered list for consistent alternating colors
+    final isEven = index % 2 == 0;
     
     return Column(
       children: [
@@ -597,17 +597,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             curve: Curves.easeInOut,
             heightFactor: isExpanded ? 1.0 : 0.0,
             alignment: Alignment.topCenter,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey[300]!, width: 1),
-                ),
-              ),
-              padding: const EdgeInsets.all(20),
-              child: _buildDetailView(summary),
-            ),
+            child: isExpanded
+                ? Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: _buildDetailView(summary),
+                  )
+                : const SizedBox.shrink(),
           ),
         ),
       ],
