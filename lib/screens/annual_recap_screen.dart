@@ -330,13 +330,14 @@ class _AnnualRecapScreenState extends State<AnnualRecapScreen> {
 
   Widget _buildAnnualRecapTable() {
     final recapsToDisplay = _filteredRecaps;
+    
+    // Calculate total width: 200 (name) + 8 (spacing) + 12 * 90 (months) = 1288px
+    const double totalTableWidth = 200 + 8 + (12 * 90);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: MediaQuery.of(context).size.width - 200,
-        ),
+      child: SizedBox(
+        width: totalTableWidth,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -352,14 +353,14 @@ class _AnnualRecapScreenState extends State<AnnualRecapScreen> {
               child: Row(
                 children: [
                   // Employee Name Column
-                  SizedBox(
+                  const SizedBox(
                     width: 200,
                     child: Text(
                       'Nama',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
-                        color: Colors.grey[800],
+                        color: Color(0xFF374151),
                       ),
                     ),
                   ),
