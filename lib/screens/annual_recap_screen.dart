@@ -22,7 +22,7 @@ class _AnnualRecapScreenState extends State<AnnualRecapScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   // Month names in Indonesian (abbreviated)
-  final List<String> _monthNames = [
+  static const List<String> _monthNames = [
     'Jan',
     'Feb',
     'Mar',

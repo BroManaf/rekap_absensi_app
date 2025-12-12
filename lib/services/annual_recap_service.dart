@@ -84,8 +84,12 @@ class AnnualRecapService {
         }
 
         // Find this employee's summary
-        final employeeSummaries = summaries.where((s) => s.employee.userId == userId);
-        final summary = employeeSummaries.isEmpty ? null : employeeSummaries.first;
+        AttendanceSummary? summary;
+        try {
+          summary = summaries.firstWhere((s) => s.employee.userId == userId);
+        } catch (e) {
+          summary = null;
+        }
         
         if (summary != null) {
           employee ??= summary.employee;
