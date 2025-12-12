@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
+import 'package:path/path.dart' as path;
 import '../models/attendance_summary.dart';
 import '../models/attendance_record.dart';
 import '../services/attendance_service.dart';
@@ -1136,7 +1137,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('File Excel berhasil disimpan: ${savePath.split('/').last.split('\\').last}'),
+            content: Text('File Excel berhasil disimpan: ${path.basename(savePath)}'),
             backgroundColor: Colors.green[600],
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),

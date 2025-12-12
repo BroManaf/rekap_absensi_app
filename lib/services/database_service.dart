@@ -241,8 +241,18 @@ class DatabaseService {
         return null;
       }
       
+      final excelFileData = results.first['excel_file'];
+      List<int> bytes;
+      
+      // Handle different possible types returned by SQLite
+      if (excelFileData is List<int>) {
+        bytes = excelFileData;
+      } else {
+        bytes = List<int>.from(excelFileData);
+      }
+      
       return {
-        'bytes': results.first['excel_file'] as List<int>,
+        'bytes': bytes,
         'filename': results.first['excel_filename'] as String?,
       };
     } catch (e) {

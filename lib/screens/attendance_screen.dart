@@ -4,6 +4,7 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:excel/excel.dart' hide Border, TextSpan;
 import 'dart:io';
+import 'package:path/path.dart' as path;
 import '../models/department.dart';
 import '../models/employee.dart';
 import '../models/attendance_record.dart';
@@ -1231,7 +1232,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       // Store Excel file bytes and filename for later saving
       _currentExcelBytes = bytes;
-      _currentFileName = filePath.split('/').last.split('\\').last;
+      _currentFileName = path.basename(filePath);
 
       List<AttendanceSummary> summaries = [];
 
