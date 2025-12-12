@@ -17,6 +17,9 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
   int? _selectedYear;
   int? _selectedMonth;
 
+  // Annual Recap identifier
+  static const int annualRecapMonth = 0;
+
   // Generate years from 2023 to 2045
   final List<int> _years = List.generate(23, (index) => 2023 + index);
 
@@ -132,9 +135,9 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                               onTap: () {
                                 setState(() {
                                   _selectedYear = year;
-                                  _selectedMonth = 0;
+                                  _selectedMonth = annualRecapMonth;
                                 });
-                                widget.onDateSelected?.call(year, 0);
+                                widget.onDateSelected?.call(year, annualRecapMonth);
                               },
                               child: Container(
                                 width: double.infinity,
@@ -143,12 +146,12 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _selectedYear == year && _selectedMonth == 0
+                                  color: _selectedYear == year && _selectedMonth == annualRecapMonth
                                       ? const Color(0xFFEEF2FF)
                                       : Colors.transparent,
                                   border: Border(
                                     left: BorderSide(
-                                      color: _selectedYear == year && _selectedMonth == 0
+                                      color: _selectedYear == year && _selectedMonth == annualRecapMonth
                                           ? const Color(0xFF6366F1)
                                           : Colors.transparent,
                                       width: 3,
@@ -159,10 +162,10 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                                   'Annual Recap',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: _selectedYear == year && _selectedMonth == 0
+                                    fontWeight: _selectedYear == year && _selectedMonth == annualRecapMonth
                                         ? FontWeight.w600
                                         : FontWeight.normal,
-                                    color: _selectedYear == year && _selectedMonth == 0
+                                    color: _selectedYear == year && _selectedMonth == annualRecapMonth
                                         ? const Color(0xFF6366F1)
                                         : Colors.grey.shade600,
                                   ),

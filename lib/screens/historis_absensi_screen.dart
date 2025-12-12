@@ -32,6 +32,9 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
+  // Annual Recap identifier (same as in HistorisSidebar)
+  static const int annualRecapMonth = 0;
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +43,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
     }
   }
 
-  bool get _isAnnualRecap => _currentMonth == 0;
+  bool get _isAnnualRecap => _currentMonth == annualRecapMonth;
 
   @override
   void dispose() {
@@ -72,7 +75,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
     });
 
     // For Annual Recap (month = 0), just set empty data
-    if (month == 0) {
+    if (month == annualRecapMonth) {
       setState(() {
         _summaries = [];
         _isLoading = false;
