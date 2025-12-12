@@ -10,6 +10,7 @@ Aplikasi Flutter untuk mengelola dan merekap data absensi karyawan dari file Exc
 - Perhitungan keterlambatan (LamaTelat) dan durasi kerja (LamaMasuk)
 - Tampilan ringkasan per karyawan dengan total akumulasi 31 hari
 - Support untuk berbagai department dengan jam kerja yang berbeda
+- **Fitur Pencarian**: Cari karyawan berdasarkan User ID atau Nama (lihat [SEARCH_FEATURE.md](SEARCH_FEATURE.md))
 
 ### 2. Export Excel
 - Upload dan proses multiple sheets Excel
