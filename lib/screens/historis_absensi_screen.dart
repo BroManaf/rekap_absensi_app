@@ -15,10 +15,10 @@ class HistorisAbsensiScreen extends StatefulWidget {
   });
 
   @override
-  State<HistorisAbsensiScreen> createState() => _HistorisAbsensiScreenState();
+  State<HistorisAbsensiScreen> createState() => HistorisAbsensiScreenState();
 }
 
-class _HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
+class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
   List<AttendanceSummary> _summaries = [];
   bool _isLoading = false;
   int? _currentYear;

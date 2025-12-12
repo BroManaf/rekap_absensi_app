@@ -37,7 +37,7 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   int? _selectedYear;
   int? _selectedMonth;
-  final GlobalKey<_HistorisAbsensiScreenState> _historisKey = GlobalKey();
+  final GlobalKey<HistorisAbsensiScreenState> _historisKey = GlobalKey();
 
   void _onDataSaved() {
     // Refresh historis screen when data is saved
