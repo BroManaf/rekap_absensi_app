@@ -10,6 +10,17 @@ void main() {
     databaseFactory = databaseFactoryFfi;
   });
 
+  /// Helper function to verify byte-for-byte equality
+  void assertBytesEqual(List<int> expected, List<int> actual, {String? reason}) {
+    expect(actual.length, equals(expected.length), 
+           reason: reason ?? 'File size should be identical');
+    
+    for (int i = 0; i < expected.length; i++) {
+      expect(actual[i], equals(expected[i]), 
+             reason: 'Byte mismatch at position $i: expected ${expected[i]}, got ${actual[i]}');
+    }
+  }
+
   group('Excel File Storage Tests', () {
     test('Save and retrieve Excel file with attendance data', () async {
       final testKey = 'test-excel-2024-12';
@@ -36,11 +47,7 @@ void main() {
       
       // Verify byte-for-byte equality
       final retrievedBytes = excelData!['bytes'] as List<int>;
-      expect(retrievedBytes.length, equals(testExcelBytes.length));
-      for (int i = 0; i < testExcelBytes.length; i++) {
-        expect(retrievedBytes[i], equals(testExcelBytes[i]), 
-               reason: 'Byte at index $i differs');
-      }
+      assertBytesEqual(testExcelBytes, retrievedBytes);
       expect(excelData['filename'], equals(testFilename));
     });
     
@@ -66,14 +73,8 @@ void main() {
       
       // Verify exact byte equality
       final retrievedBytes = excelData!['bytes'] as List<int>;
-      expect(retrievedBytes.length, equals(testExcelBytes.length), 
-             reason: 'File size should be identical');
-      
-      // Compare all bytes
-      for (int i = 0; i < testExcelBytes.length; i++) {
-        expect(retrievedBytes[i], equals(testExcelBytes[i]), 
-               reason: 'Byte mismatch at position $i: expected ${testExcelBytes[i]}, got ${retrievedBytes[i]}');
-      }
+      assertBytesEqual(testExcelBytes, retrievedBytes, 
+                       reason: 'Excel file bytes should be preserved exactly');
     });
 
     test('Save attendance data without Excel file', () async {

@@ -236,6 +236,12 @@ class DatabaseService {
   }
 
   /// Get Excel file data for a specific key
+  /// 
+  /// Returns a Map with 'bytes' (List<int>) and 'filename' (String?) if found.
+  /// Returns null if no file exists or if data is corrupted.
+  /// 
+  /// The BLOB is returned directly as List<int> (Uint8List from SQLite)
+  /// without any conversion to preserve byte-perfect file integrity.
   static Future<Map<String, dynamic>?> getExcelFile(String key) async {
     try {
       final db = await database;
@@ -260,26 +266,26 @@ class DatabaseService {
       }
       
       // SQLite returns BLOB as Uint8List which implements List<int>
-      // We should keep it as-is to preserve exact bytes
-      List<int> bytes;
-      
+      // We keep it as-is to preserve exact bytes without any copy/conversion
       if (excelFileData is List<int>) {
-        // Keep the exact same list reference - don't create a copy
-        bytes = excelFileData;
+        final bytes = excelFileData;
         
         if (kDebugMode) {
           final filename = results.first['excel_filename'] as String?;
           debugPrint('[DatabaseService] Retrieved Excel file: $filename, size: ${bytes.length} bytes');
         }
+        
+        return {
+          'bytes': bytes,
+          'filename': results.first['excel_filename'] as String?,
+        };
       } else {
-        debugPrint('Unexpected Excel file data type: ${excelFileData.runtimeType}');
+        // This should never happen with SQLite BLOB, but log if it does
+        // Possible causes: database corruption, wrong column type, migration issue
+        debugPrint('[DatabaseService] ERROR: Unexpected Excel file data type: ${excelFileData.runtimeType}');
+        debugPrint('[DatabaseService] This indicates potential database corruption or schema mismatch');
         return null;
       }
-      
-      return {
-        'bytes': bytes,
-        'filename': results.first['excel_filename'] as String?,
-      };
     } catch (e) {
       debugPrint('Error getting Excel file: $e');
       return null;
