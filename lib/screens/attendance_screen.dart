@@ -25,6 +25,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   final Set<int> _expandedRows = {};
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  
+  // Animation duration for accordion expansion
+  static const Duration _expansionDuration = Duration(milliseconds: 200);
 
   @override
   void dispose() {
@@ -279,7 +282,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     onChanged: (value) {
                                       setState(() {
                                         _searchQuery = value;
-                                        _expandedRows.clear(); // Clear expanded rows when searching
+                                        // Clear expanded rows when filtering to provide a cleaner,
+                                        // more focused view of the search results
+                                        _expandedRows.clear();
                                       });
                                     },
                                   ),
@@ -332,8 +337,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildSummaryTable() {
-    final summaries = _filteredSummaries;
-    
     return Column(
       children: [
         // Table Header
@@ -413,7 +416,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
         ),
         // Table Rows
-        if (summaries.isEmpty && _searchQuery.isNotEmpty)
+        if (_filteredSummaries.isEmpty && _searchQuery.isNotEmpty)
           Container(
             padding: const EdgeInsets.all(32),
             child: Column(
@@ -443,9 +446,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: summaries.length,
+            itemCount: _filteredSummaries.length,
             itemBuilder: (context, index) {
-              final summary = summaries[index];
+              final summary = _filteredSummaries[index];
               return _buildExpandableTableRow(summary, index);
             },
           ),
@@ -588,7 +591,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         // Expanded Details
         ClipRect(
           child: AnimatedAlign(
-            duration: const Duration(milliseconds: 200),
+            duration: _expansionDuration,
             curve: Curves.easeInOut,
             heightFactor: isExpanded ? 1.0 : 0.0,
             alignment: Alignment.topCenter,
