@@ -22,7 +22,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   List<AttendanceSummary> _summaries = [];
   bool _isProcessing = false;
   String? _currentFileName;
-  final Set<int> _expandedRows = {};
+  final Set<String> _expandedEmployeeIds = {}; // Track by employee ID instead of index
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   
@@ -233,7 +233,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                         _currentFileName = null;
                                         _searchQuery = '';
                                         _searchController.clear();
-                                        _expandedRows.clear();
+                                        _expandedEmployeeIds.clear();
                                       });
                                     },
                                     icon: const Icon(Icons.refresh, size: 16),
@@ -284,7 +284,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                         _searchQuery = value;
                                         // Clear expanded rows when filtering to provide a cleaner,
                                         // more focused view of the search results
-                                        _expandedRows.clear();
+                                        _expandedEmployeeIds.clear();
                                       });
                                     },
                                   ),
@@ -295,7 +295,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       setState(() {
                                         _searchQuery = '';
                                         _searchController.clear();
-                                        _expandedRows.clear();
+                                        _expandedEmployeeIds.clear();
                                       });
                                     },
                                     child: Icon(Icons.clear, color: Colors.grey[600], size: 20),
@@ -449,16 +449,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             itemCount: _filteredSummaries.length,
             itemBuilder: (context, index) {
               final summary = _filteredSummaries[index];
-              return _buildExpandableTableRow(summary, index);
+              return _buildExpandableTableRow(summary);
             },
           ),
       ],
     );
   }
 
-  Widget _buildExpandableTableRow(AttendanceSummary summary, int index) {
-    final isExpanded = _expandedRows.contains(index);
-    final isEven = index % 2 == 0;
+  Widget _buildExpandableTableRow(AttendanceSummary summary) {
+    final employeeId = summary.employee.userId;
+    final isExpanded = _expandedEmployeeIds.contains(employeeId);
+    // Use hashCode for deterministic alternating colors
+    final isEven = summary.employee.userId.hashCode % 2 == 0;
     
     return Column(
       children: [
@@ -467,9 +469,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           onTap: () {
             setState(() {
               if (isExpanded) {
-                _expandedRows.remove(index);
+                _expandedEmployeeIds.remove(employeeId);
               } else {
-                _expandedRows.add(index);
+                _expandedEmployeeIds.add(employeeId);
               }
             });
           },
