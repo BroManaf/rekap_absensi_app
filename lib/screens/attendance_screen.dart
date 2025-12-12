@@ -626,235 +626,446 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Late Details Section
-          _buildDetailSection(
+          _buildMinimalistTableSection(
             'Rincian Keterlambatan',
             Icons.warning_amber_rounded,
             Colors.orange[700]!,
+            Colors.orange[50]!,
             lateDetails.isEmpty
-                ? [_buildEmptyState('Tidak ada keterlambatan')]
+                ? null
                 : lateDetails.map((detail) {
                     final hours = detail['lateMinutes'] ~/ 60;
                     final minutes = detail['lateMinutes'] % 60;
                     final timeStr = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
                     
-                    return _buildDetailRow(
-                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
-                      'Masuk jam ${detail['checkInTime']}',
-                      'Telat: $timeStr',
-                      Colors.orange[50]!,
-                    );
+                    return {
+                      'date': '${detail['date'].day}',
+                      'day': detail['dayOfWeek'],
+                      'time': detail['checkInTime'],
+                      'duration': timeStr,
+                    };
                   }).toList(),
+            ['Tgl', 'Hari', 'Jam Masuk', 'Durasi'],
+            'Tidak ada keterlambatan',
           ),
           const SizedBox(height: 16),
           // Overtime Details Section
-          _buildDetailSection(
+          _buildMinimalistTableSection(
             'Rincian Lembur',
             Icons.nights_stay,
             Colors.indigo[700]!,
+            Colors.indigo[50]!,
             overtimeDetails.isEmpty
-                ? [_buildEmptyState('Tidak ada lembur')]
+                ? null
                 : overtimeDetails.map((detail) {
                     final hours = detail['overtimeMinutes'] ~/ 60;
                     final minutes = detail['overtimeMinutes'] % 60;
                     final timeStr = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
                     
-                    return _buildDetailRow(
-                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
-                      'Pulang jam ${detail['checkOutTime']}',
-                      'Lembur: $timeStr',
-                      Colors.indigo[50]!,
-                    );
+                    return {
+                      'date': '${detail['date'].day}',
+                      'day': detail['dayOfWeek'],
+                      'time': detail['checkOutTime'],
+                      'duration': timeStr,
+                    };
                   }).toList(),
+            ['Tgl', 'Hari', 'Jam Pulang', 'Durasi'],
+            'Tidak ada lembur',
           ),
           const SizedBox(height: 16),
           // Absence/Sick Leave Details Section
-          _buildDetailSection(
+          _buildAbsenceTableSection(
             'Rincian Izin/Sakit',
             Icons.sick,
             Colors.red[700]!,
-            absenceDetails.isEmpty
-                ? [_buildEmptyState('Tidak ada izin/sakit')]
-                : absenceDetails.map((detail) {
-                    return _buildAbsenceRow(
-                      'Tanggal ${detail['date'].day} (${detail['dayOfWeek']})',
-                      detail['record'],
-                    );
-                  }).toList(),
+            absenceDetails,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailSection(
+  /// Build a minimalist table section for late/overtime details
+  Widget _buildMinimalistTableSection(
     String title,
     IconData icon,
     Color color,
-    List<Widget> children,
+    Color bgColor,
+    List<Map<String, String>>? data,
+    List<String> headers,
+    String emptyMessage,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Section Title
         Row(
           children: [
-            Icon(icon, size: 18, color: color),
+            Icon(icon, size: 16, color: color),
             const SizedBox(width: 8),
             Text(
               title,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 15,
+                fontSize: 14,
                 color: color,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        ...children,
+        const SizedBox(height: 10),
+        // Table or Empty State
+        if (data == null || data.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle_outline, color: Colors.grey[400], size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  emptyMessage,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Column(
+              children: [
+                // Table Header
+                Container(
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(5),
+                      topRight: Radius.circular(5),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 40,
+                        child: Text(
+                          headers[0],
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: Text(
+                          headers[1],
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          headers[2],
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 60,
+                        child: Text(
+                          headers[3],
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Table Rows
+                ...data.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final row = entry.value;
+                  final isLast = index == data.length - 1;
+                  
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: index % 2 == 0 ? Colors.white : Colors.grey[50],
+                      border: isLast ? null : Border(
+                        bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+                      ),
+                      borderRadius: isLast ? const BorderRadius.only(
+                        bottomLeft: Radius.circular(5),
+                        bottomRight: Radius.circular(5),
+                      ) : null,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 40,
+                          child: Text(
+                            row['date']!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 50,
+                          child: Text(
+                            row['day']!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            row['time']!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 60,
+                          child: Text(
+                            row['duration']!,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[900],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildDetailRow(
-    String date,
-    String time,
-    String duration,
-    Color bgColor,
+  /// Build absence/sick leave table section with editable notes
+  Widget _buildAbsenceTableSection(
+    String title,
+    IconData icon,
+    Color color,
+    List<Map<String, dynamic>> absenceDetails,
   ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              date,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 13,
-                color: Colors.grey[800],
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              time,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              duration,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Title
+        Row(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 8),
+            Text(
+              title,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 13,
-                color: Colors.grey[900],
+                fontSize: 14,
+                color: color,
               ),
-              textAlign: TextAlign.right,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(String message) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle_outline, color: Colors.grey[400], size: 20),
-          const SizedBox(width: 8),
-          Text(
-            message,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 13,
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Table or Empty State
+        if (absenceDetails.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.grey[200]!),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAbsenceRow(String date, AttendanceRecord record) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red[50],
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  date,
+            child: Row(
+              children: [
+                Icon(Icons.check_circle_outline, color: Colors.grey[400], size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Tidak ada izin/sakit',
                   style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
-                    color: Colors.grey[800],
+                    color: Colors.grey[600],
+                    fontSize: 12,
                   ),
                 ),
-              ),
-              Icon(Icons.event_busy, size: 16, color: Colors.red[700]),
-            ],
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            key: ValueKey('absence_${record.date.toIso8601String()}'),
-            controller: TextEditingController.fromValue(
-              TextEditingValue(
-                text: record.notes ?? '',
-                selection: TextSelection.collapsed(offset: (record.notes ?? '').length),
-              ),
+              ],
             ),
-            decoration: InputDecoration(
-              hintText: 'Keterangan (Sakit/Izin)',
-              hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6),
-                borderSide: BorderSide(color: Colors.red[400]!),
-              ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(6),
             ),
-            style: const TextStyle(fontSize: 12),
-            onChanged: (value) {
-              record.notes = value;
-            },
+            child: Column(
+              children: [
+                // Table Header
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(5),
+                      topRight: Radius.circular(5),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 40,
+                        child: Text(
+                          'Tgl',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: Text(
+                          'Hari',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Keterangan',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Table Rows
+                ...absenceDetails.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final detail = entry.value;
+                  final record = detail['record'] as AttendanceRecord;
+                  final isLast = index == absenceDetails.length - 1;
+                  
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: index % 2 == 0 ? Colors.white : Colors.grey[50],
+                      border: isLast ? null : Border(
+                        bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+                      ),
+                      borderRadius: isLast ? const BorderRadius.only(
+                        bottomLeft: Radius.circular(5),
+                        bottomRight: Radius.circular(5),
+                      ) : null,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 40,
+                          child: Text(
+                            '${detail['date'].day}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 50,
+                          child: Text(
+                            detail['dayOfWeek'],
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            key: ValueKey('absence_${record.date.toIso8601String()}'),
+                            controller: TextEditingController.fromValue(
+                              TextEditingValue(
+                                text: record.notes ?? '',
+                                selection: TextSelection.collapsed(offset: (record.notes ?? '').length),
+                              ),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Sakit/Izin',
+                              hintStyle: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide: BorderSide(color: Colors.red[400]!, width: 1.5),
+                              ),
+                              isDense: true,
+                            ),
+                            style: const TextStyle(fontSize: 11),
+                            onChanged: (value) {
+                              record.notes = value;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
