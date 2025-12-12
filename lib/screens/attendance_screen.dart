@@ -23,6 +23,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   bool _isProcessing = false;
   String? _currentFileName;
   final Set<int> _expandedRows = {};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<AttendanceSummary> get _filteredSummaries {
+    if (_searchQuery.isEmpty) {
+      return _summaries;
+    }
+    
+    final query = _searchQuery.toLowerCase();
+    return _summaries.where((summary) {
+      final userId = summary.employee.userId.toLowerCase();
+      final name = summary.employee.name.toLowerCase();
+      return userId.contains(query) || name.contains(query);
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +216,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    '${_summaries.length} karyawan',
+                                    '${_filteredSummaries.length} karyawan',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[600],
@@ -207,6 +228,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       setState(() {
                                         _summaries.clear();
                                         _currentFileName = null;
+                                        _searchQuery = '';
+                                        _searchController.clear();
+                                        _expandedRows.clear();
                                       });
                                     },
                                     icon: const Icon(Icons.refresh, size: 16),
@@ -224,6 +248,55 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 ],
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 16),
+                          // Search Field
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF9FAFB),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.search, color: Colors.grey[600], size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _searchController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Cari berdasarkan User ID atau Nama Karyawan...',
+                                      hintStyle: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[500],
+                                      ),
+                                      border: InputBorder.none,
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    style: const TextStyle(fontSize: 14),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _searchQuery = value;
+                                        _expandedRows.clear(); // Clear expanded rows when searching
+                                      });
+                                    },
+                                  ),
+                                ),
+                                if (_searchQuery.isNotEmpty)
+                                  InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        _searchQuery = '';
+                                        _searchController.clear();
+                                        _expandedRows.clear();
+                                      });
+                                    },
+                                    child: Icon(Icons.clear, color: Colors.grey[600], size: 20),
+                                  ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 24),
                           _buildSummaryTable(),
@@ -259,6 +332,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildSummaryTable() {
+    final summaries = _filteredSummaries;
+    
     return Column(
       children: [
         // Table Header
@@ -338,15 +413,42 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
         ),
         // Table Rows
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _summaries.length,
-          itemBuilder: (context, index) {
-            final summary = _summaries[index];
-            return _buildExpandableTableRow(summary, index);
-          },
-        ),
+        if (summaries.isEmpty && _searchQuery.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              children: [
+                Icon(Icons.search_off, size: 48, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Text(
+                  'Tidak ada hasil pencarian',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Coba kata kunci lain',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: summaries.length,
+            itemBuilder: (context, index) {
+              final summary = summaries[index];
+              return _buildExpandableTableRow(summary, index);
+            },
+          ),
       ],
     );
   }
@@ -484,22 +586,24 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
         ),
         // Expanded Details
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: isExpanded
-              ? Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey[300]!, width: 1),
-                    ),
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  child: _buildDetailView(summary),
-                )
-              : const SizedBox.shrink(),
+        ClipRect(
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            heightFactor: isExpanded ? 1.0 : 0.0,
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+                ),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: _buildDetailView(summary),
+            ),
+          ),
         ),
       ],
     );
