@@ -23,6 +23,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   bool _isProcessing = false;
   String? _currentFileName;
   final Set<int> _expandedRows = {};
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<AttendanceSummary> get _filteredSummaries {
+    if (_searchQuery.isEmpty) {
+      return _summaries;
+    }
+    
+    final query = _searchQuery.toLowerCase();
+    return _summaries.where((summary) {
+      final userId = summary.employee.userId.toLowerCase();
+      final name = summary.employee.name.toLowerCase();
+      return userId.contains(query) || name.contains(query);
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -207,6 +228,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       setState(() {
                                         _summaries.clear();
                                         _currentFileName = null;
+                                        _searchQuery = '';
+                                        _searchController.clear();
                                       });
                                     },
                                     icon: const Icon(Icons.refresh, size: 16),
@@ -225,6 +248,89 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ),
                             ],
                           ),
+                          const SizedBox(height: 20),
+                          // Search Field
+                          Container(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Cari berdasarkan User ID atau Nama Karyawan...',
+                                hintStyle: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[400],
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Colors.grey[400],
+                                  size: 20,
+                                ),
+                                suffixIcon: _searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: Icon(
+                                          Icons.clear,
+                                          color: Colors.grey[400],
+                                          size: 20,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _searchQuery = '';
+                                            _searchController.clear();
+                                          });
+                                        },
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: const Color(0xFFF9FAFB),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF6366F1),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value;
+                                });
+                              },
+                            ),
+                          ),
+                          if (_searchQuery.isNotEmpty && _filteredSummaries.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text(
+                                'Tidak ada hasil yang cocok dengan pencarian "$_searchQuery"',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.orange[700],
+                                ),
+                              ),
+                            ),
+                          if (_searchQuery.isNotEmpty && _filteredSummaries.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text(
+                                'Menampilkan ${_filteredSummaries.length} dari ${_summaries.length} karyawan',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ),
                           const SizedBox(height: 24),
                           _buildSummaryTable(),
                         ],
@@ -259,6 +365,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildSummaryTable() {
+    final summariesToDisplay = _filteredSummaries;
+    
     return Column(
       children: [
         // Table Header
@@ -341,9 +449,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: _summaries.length,
+          itemCount: summariesToDisplay.length,
           itemBuilder: (context, index) {
-            final summary = _summaries[index];
+            final summary = summariesToDisplay[index];
             return _buildExpandableTableRow(summary, index);
           },
         ),
