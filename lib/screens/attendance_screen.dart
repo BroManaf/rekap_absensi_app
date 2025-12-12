@@ -22,7 +22,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   List<AttendanceSummary> _summaries = [];
   bool _isProcessing = false;
   String? _currentFileName;
-  final Set<int> _expandedRows = {};
 
   @override
   Widget build(BuildContext context) {
@@ -272,11 +271,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const SizedBox(width: 40), // Space for expand icon
               const SizedBox(
-                width: 50,
+                width: 80,
                 child: Text(
-                  'No',
+                  'User ID',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -293,30 +291,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                     color: Color(0xFF374151),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: Text(
-                  'User ID',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: Text(
-                  'Department',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Colors.grey[700],
                   ),
                 ),
               ),
@@ -369,200 +343,113 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           itemCount: _summaries.length,
           itemBuilder: (context, index) {
             final summary = _summaries[index];
-            return _buildExpandableTableRow(summary, index);
+            return _buildTableRow(summary, index);
           },
         ),
       ],
     );
   }
 
-  Widget _buildExpandableTableRow(AttendanceSummary summary, int index) {
-    final isExpanded = _expandedRows.contains(index);
+  Widget _buildTableRow(AttendanceSummary summary, int index) {
     final isEven = index % 2 == 0;
     
-    return Column(
-      children: [
-        // Table Row
-        InkWell(
-          onTap: () {
-            setState(() {
-              if (isExpanded) {
-                _expandedRows.remove(index);
-              } else {
-                _expandedRows.add(index);
-              }
-            });
-          },
-          hoverColor: const Color(0xFFF3F4F6),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isEven ? Colors.white : const Color(0xFFFAFAFA),
-              border: Border(
-                bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+    return Container(
+      decoration: BoxDecoration(
+        color: isEven ? Colors.white : const Color(0xFFFAFAFA),
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          // User ID
+          SizedBox(
+            width: 80,
+            child: Text(
+              summary.employee.userId,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.blue[700],
+                fontWeight: FontWeight.w600,
               ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          ),
+          const SizedBox(width: 8),
+          // Nama Karyawan
+          Expanded(
+            flex: 2,
+            child: Text(
+              summary.employee.name,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Masuk
+          Expanded(
+            flex: 1,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Expand Icon
-                AnimatedRotation(
-                  duration: const Duration(milliseconds: 200),
-                  turns: isExpanded ? 0.25 : 0.0,
-                  child: Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // No
-                SizedBox(
-                  width: 50,
-                  child: Text(
-                    '${index + 1}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Nama Karyawan
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    summary.employee.name,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // User ID
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      summary.employee.userId,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Department
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.purple[50],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      summary.employee.department.name,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.purple[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Masuk
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.access_time, size: 14, color: Colors.green[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        summary.totalMasukFormatted,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.green[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Telat
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orange[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        summary.totalTelatFormatted,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.orange[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Lembur
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.nights_stay, size: 14, color: Colors.indigo[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        summary.totalLemburFormatted,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.indigo[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                Icon(Icons.access_time, size: 14, color: Colors.green[600]),
+                const SizedBox(width: 4),
+                Text(
+                  summary.totalMasukFormatted,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-        ),
-        // Expanded Details
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: isExpanded
-              ? Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey[300]!, width: 1),
-                    ),
+          const SizedBox(width: 8),
+          // Telat
+          Expanded(
+            flex: 1,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orange[600]),
+                const SizedBox(width: 4),
+                Text(
+                  summary.totalTelatFormatted,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.orange[700],
+                    fontWeight: FontWeight.w600,
                   ),
-                  padding: const EdgeInsets.all(20),
-                  child: _buildDetailView(summary),
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Lembur
+          Expanded(
+            flex: 1,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.nights_stay, size: 14, color: Colors.indigo[600]),
+                const SizedBox(width: 4),
+                Text(
+                  summary.totalLemburFormatted,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.indigo[700],
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
