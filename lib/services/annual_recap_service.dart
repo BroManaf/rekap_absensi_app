@@ -57,8 +57,8 @@ class AnnualRecapService {
     }
   }
 
-  /// Get list of all employees from a specific month
-  /// Used to get the complete employee list when some months might be missing
+  /// Get list of all unique employees across all months of a year
+  /// Returns a sorted list of employee user IDs
   static Future<List<String>> getEmployeeList(int year) async {
     try {
       final Set<String> employeeIds = {};
@@ -76,7 +76,9 @@ class AnnualRecapService {
         }
       }
 
-      return employeeIds.toList()..sort();
+      final result = employeeIds.toList();
+      result.sort();
+      return result;
     } catch (e) {
       debugPrint('[AnnualRecapService] Error getting employee list: $e');
       return [];
