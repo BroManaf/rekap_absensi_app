@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rekap_absensi_app/services/database_service.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -32,8 +33,47 @@ void main() {
       // Load Excel file
       final excelData = await DatabaseService.getExcelFile(testKey);
       expect(excelData, isNotNull);
-      expect(excelData!['bytes'], equals(testExcelBytes));
+      
+      // Verify byte-for-byte equality
+      final retrievedBytes = excelData!['bytes'] as List<int>;
+      expect(retrievedBytes.length, equals(testExcelBytes.length));
+      for (int i = 0; i < testExcelBytes.length; i++) {
+        expect(retrievedBytes[i], equals(testExcelBytes[i]), 
+               reason: 'Byte at index $i differs');
+      }
       expect(excelData['filename'], equals(testFilename));
+    });
+    
+    test('Save and retrieve Excel file as Uint8List (simulating real Excel)', () async {
+      final testKey = 'test-excel-uint8-2024-12';
+      final testData = '{"test": "attendance data"}';
+      // Simulate real Excel file bytes using Uint8List
+      final testExcelBytes = Uint8List.fromList(List<int>.generate(500, (i) => i % 256));
+      final testFilename = 'test_real.xlsx';
+
+      // Save data with Excel file
+      final saveResult = await DatabaseService.saveData(
+        testKey,
+        testData,
+        excelFileBytes: testExcelBytes,
+        excelFilename: testFilename,
+      );
+      expect(saveResult, isTrue);
+
+      // Load Excel file
+      final excelData = await DatabaseService.getExcelFile(testKey);
+      expect(excelData, isNotNull);
+      
+      // Verify exact byte equality
+      final retrievedBytes = excelData!['bytes'] as List<int>;
+      expect(retrievedBytes.length, equals(testExcelBytes.length), 
+             reason: 'File size should be identical');
+      
+      // Compare all bytes
+      for (int i = 0; i < testExcelBytes.length; i++) {
+        expect(retrievedBytes[i], equals(testExcelBytes[i]), 
+               reason: 'Byte mismatch at position $i: expected ${testExcelBytes[i]}, got ${retrievedBytes[i]}');
+      }
     });
 
     test('Save attendance data without Excel file', () async {

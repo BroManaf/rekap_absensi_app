@@ -151,6 +151,11 @@ class DatabaseService {
       final db = await database;
       final now = DateTime.now().toIso8601String();
       
+      // Log file size for debugging
+      if (excelFileBytes != null && kDebugMode) {
+        debugPrint('[DatabaseService] Saving Excel file: $excelFilename, size: ${excelFileBytes.length} bytes');
+      }
+      
       await db.insert(
         'attendance_data',
         {
@@ -163,6 +168,10 @@ class DatabaseService {
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+      
+      if (excelFileBytes != null && kDebugMode) {
+        debugPrint('[DatabaseService] Excel file saved successfully for key: $key');
+      }
       
       return true;
     } catch (e) {
@@ -238,6 +247,9 @@ class DatabaseService {
       );
       
       if (results.isEmpty || results.first['excel_file'] == null) {
+        if (kDebugMode) {
+          debugPrint('[DatabaseService] No Excel file found for key: $key');
+        }
         return null;
       }
       
@@ -247,17 +259,17 @@ class DatabaseService {
         return null;
       }
       
+      // SQLite returns BLOB as Uint8List which implements List<int>
+      // We should keep it as-is to preserve exact bytes
       List<int> bytes;
       
-      // Handle different possible types returned by SQLite
       if (excelFileData is List<int>) {
+        // Keep the exact same list reference - don't create a copy
         bytes = excelFileData;
-      } else if (excelFileData is Iterable) {
-        try {
-          bytes = List<int>.from(excelFileData);
-        } catch (e) {
-          debugPrint('Error converting Excel file data to List<int>: $e');
-          return null;
+        
+        if (kDebugMode) {
+          final filename = results.first['excel_filename'] as String?;
+          debugPrint('[DatabaseService] Retrieved Excel file: $filename, size: ${bytes.length} bytes');
         }
       } else {
         debugPrint('Unexpected Excel file data type: ${excelFileData.runtimeType}');

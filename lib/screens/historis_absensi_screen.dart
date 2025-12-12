@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:path/path.dart' as path;
@@ -1129,6 +1130,10 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
       final bytes = bytesData as List<int>;
       final originalFilename = excelData['filename'] as String?;
       
+      if (kDebugMode) {
+        debugPrint('[HistorisScreen] Excel file ready for download: ${bytes.length} bytes, filename: $originalFilename');
+      }
+      
       // Generate a default filename if not available
       final defaultFilename = 'Absensi_${date_utils.DateUtils.getMonthName(_currentMonth!)}_$_currentYear.xlsx';
       final filename = originalFilename ?? defaultFilename;
@@ -1149,6 +1154,12 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
       // Write the file to the selected location
       final file = File(savePath);
       await file.writeAsBytes(bytes);
+      
+      if (kDebugMode) {
+        final savedFile = File(savePath);
+        final savedSize = await savedFile.length();
+        debugPrint('[HistorisScreen] File written to: $savePath, size: $savedSize bytes (original: ${bytes.length} bytes)');
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

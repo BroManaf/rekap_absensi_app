@@ -1226,6 +1226,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       // Store Excel file bytes and filename for later saving
       _currentExcelBytes = bytes;
       _currentFileName = path.basename(filePath);
+      
+      if (kDebugMode) {
+        debugPrint('[AttendanceScreen] Excel file loaded: $_currentFileName, size: ${bytes.length} bytes');
+      }
 
       List<AttendanceSummary> summaries = [];
 
