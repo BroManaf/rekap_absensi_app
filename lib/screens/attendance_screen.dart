@@ -1380,23 +1380,41 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             if (rawValue is DateTime) {
               parsedDate = rawValue;
             } else if (rawValue != null) {
-              // Try parsing string as date
-              final valueStr = rawValue.toString();
-              // Try various date formats
-              try {
-                parsedDate = DateTime.parse(valueStr);
-              } catch (e) {
-                // If direct parsing fails, try Excel date number
-                final excelDate = double.tryParse(valueStr);
-                if (excelDate != null) {
-                  // Excel epoch: 1899-12-30
-                  final excelEpoch = DateTime(1899, 12, 30);
-                  parsedDate = excelEpoch.add(Duration(days: excelDate.toInt()));
+              final valueStr = rawValue.toString().trim();
+              
+              // Try to extract year and month directly from string format like "YYYY-MM-DD" or "YYYY-MM"
+              // This avoids issues with invalid days (e.g., 2025-11-31 becoming 2025-12-01)
+              final datePattern = RegExp(r'^(\d{4})-(\d{1,2})(?:-\d{1,2})?$');
+              final match = datePattern.firstMatch(valueStr);
+              
+              if (match != null) {
+                // Extract year and month directly from the string
+                final yearStr = match.group(1);
+                final monthStr = match.group(2);
+                if (yearStr != null && monthStr != null) {
+                  year = int.tryParse(yearStr);
+                  month = int.tryParse(monthStr);
+                  if (year != null && month != null && month >= 1 && month <= 12) {
+                    break; // Successfully extracted, no need to continue
+                  }
+                }
+              } else {
+                // Fallback to DateTime parsing for other formats
+                try {
+                  parsedDate = DateTime.parse(valueStr);
+                } catch (e) {
+                  // If direct parsing fails, try Excel date number
+                  final excelDate = double.tryParse(valueStr);
+                  if (excelDate != null) {
+                    // Excel epoch: 1899-12-30
+                    final excelEpoch = DateTime(1899, 12, 30);
+                    parsedDate = excelEpoch.add(Duration(days: excelDate.toInt()));
+                  }
                 }
               }
             }
             
-            if (parsedDate != null) {
+            if (parsedDate != null && year == null && month == null) {
               year = parsedDate.year;
               month = parsedDate.month;
               break;
