@@ -1216,6 +1216,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Future<void> _processExcelFile(String filePath) async {
     setState(() {
       _isProcessing = true;
+      // Reset year and month so first employee's date will be used
+      _dataYear = null;
+      _dataMonth = null;
     });
 
     try {
@@ -1436,9 +1439,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       }
     }
 
-    // Store year and month for saving
-    _dataYear = year;
-    _dataMonth = month;
+    // Store year and month for saving (only from the first employee processed)
+    if (_dataYear == null || _dataMonth == null) {
+      _dataYear = year;
+      _dataMonth = month;
+    }
 
     // Determine number of days in the detected month
     final daysInMonth = DateTime(year, month + 1, 0).day;
