@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/attendance_screen.dart';
 import 'screens/historis_absensi_screen.dart';
 import 'widgets/sidebar.dart';
+import 'widgets/historis_sidebar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,7 +46,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: Row(
         children: [
-          // Sidebar
+          // Main Sidebar
           Sidebar(
             selectedIndex: _selectedIndex,
             onMenuSelected: (index) {
@@ -54,6 +55,14 @@ class _MainScreenState extends State<MainScreen> {
               });
             },
           ),
+          // Secondary Sidebar (only show for Historis Absensi)
+          if (_selectedIndex == 1)
+            HistorisSidebar(
+              onDateSelected: (year, month) {
+                // Handle date selection if needed
+                // You can pass this to HistorisAbsensiScreen through a callback
+              },
+            ),
           // Main Content
           Expanded(
             child: _screens[_selectedIndex],
