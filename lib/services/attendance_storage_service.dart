@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/attendance_summary.dart';
 import '../models/attendance_record.dart';
@@ -39,7 +40,7 @@ class AttendanceStorageService {
       
       return true;
     } catch (e) {
-      print('Error saving attendance data: $e');
+      debugPrint('Error saving attendance data: $e');
       return false;
     }
   }
@@ -69,7 +70,7 @@ class AttendanceStorageService {
       
       return summaries;
     } catch (e) {
-      print('Error loading attendance data: $e');
+      debugPrint('Error loading attendance data: $e');
       return null;
     }
   }
@@ -106,7 +107,7 @@ class AttendanceStorageService {
       
       return months;
     } catch (e) {
-      print('Error getting available months: $e');
+      debugPrint('Error getting available months: $e');
       return [];
     }
   }
