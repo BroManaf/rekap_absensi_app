@@ -40,6 +40,8 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
     }
   }
 
+  bool get _isAnnualRecap => _currentMonth == 0;
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -68,6 +70,15 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
       _searchQuery = '';
       _searchController.clear();
     });
+
+    // For Annual Recap (month = 0), just set empty data
+    if (month == 0) {
+      setState(() {
+        _summaries = [];
+        _isLoading = false;
+      });
+      return;
+    }
 
     final data = await AttendanceStorageService.loadAttendanceData(
       year: year,
@@ -105,7 +116,9 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                   const SizedBox(height: 8),
                   Text(
                     _currentYear != null && _currentMonth != null
-                        ? 'Data absensi ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
+                        ? _isAnnualRecap
+                            ? 'Annual Recap $_currentYear'
+                            : 'Data absensi ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
                         : 'Pilih periode dari sidebar untuk melihat data',
                     style: TextStyle(
                       color: Colors.grey[600],
@@ -163,7 +176,9 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 _currentYear != null && _currentMonth != null
-                                    ? 'Tidak ada data untuk ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
+                                    ? _isAnnualRecap
+                                        ? 'Annual Recap $_currentYear'
+                                        : 'Tidak ada data untuk ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
                                     : 'Pilih periode dari sidebar',
                                 style: TextStyle(
                                   fontSize: 18,
@@ -174,7 +189,9 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                               const SizedBox(height: 8),
                               Text(
                                 _currentYear != null && _currentMonth != null
-                                    ? 'Silakan upload dan simpan data terlebih dahulu'
+                                    ? _isAnnualRecap
+                                        ? 'Konten Annual Recap belum tersedia'
+                                        : 'Silakan upload dan simpan data terlebih dahulu'
                                     : 'Klik tahun dan bulan di sidebar untuk melihat data historis',
                                 style: TextStyle(
                                   fontSize: 14,

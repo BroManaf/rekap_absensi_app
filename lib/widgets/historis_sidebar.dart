@@ -126,19 +126,15 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                       secondChild: Container(
                         color: const Color(0xFFFAFAFA),
                         child: Column(
-                          children: _months.asMap().entries.map((entry) {
-                            final monthIndex = entry.key;
-                            final monthName = entry.value;
-                            final isSelected = _selectedYear == year &&
-                                _selectedMonth == monthIndex + 1;
-
-                            return InkWell(
+                          children: [
+                            // Annual Recap item (month = 0)
+                            InkWell(
                               onTap: () {
                                 setState(() {
                                   _selectedYear = year;
-                                  _selectedMonth = monthIndex + 1;
+                                  _selectedMonth = 0;
                                 });
-                                widget.onDateSelected?.call(year, monthIndex + 1);
+                                widget.onDateSelected?.call(year, 0);
                               },
                               child: Container(
                                 width: double.infinity,
@@ -147,12 +143,12 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: isSelected
+                                  color: _selectedYear == year && _selectedMonth == 0
                                       ? const Color(0xFFEEF2FF)
                                       : Colors.transparent,
                                   border: Border(
                                     left: BorderSide(
-                                      color: isSelected
+                                      color: _selectedYear == year && _selectedMonth == 0
                                           ? const Color(0xFF6366F1)
                                           : Colors.transparent,
                                       width: 3,
@@ -160,20 +156,69 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                                   ),
                                 ),
                                 child: Text(
-                                  monthName,
+                                  'Annual Recap',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: isSelected
+                                    fontWeight: _selectedYear == year && _selectedMonth == 0
                                         ? FontWeight.w600
                                         : FontWeight.normal,
-                                    color: isSelected
+                                    color: _selectedYear == year && _selectedMonth == 0
                                         ? const Color(0xFF6366F1)
                                         : Colors.grey.shade600,
                                   ),
                                 ),
                               ),
-                            );
-                          }).toList(),
+                            ),
+                            // Monthly items
+                            ..._months.asMap().entries.map((entry) {
+                              final monthIndex = entry.key;
+                              final monthName = entry.value;
+                              final isSelected = _selectedYear == year &&
+                                  _selectedMonth == monthIndex + 1;
+
+                              return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedYear = year;
+                                    _selectedMonth = monthIndex + 1;
+                                  });
+                                  widget.onDateSelected?.call(year, monthIndex + 1);
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? const Color(0xFFEEF2FF)
+                                        : Colors.transparent,
+                                    border: Border(
+                                      left: BorderSide(
+                                        color: isSelected
+                                            ? const Color(0xFF6366F1)
+                                            : Colors.transparent,
+                                        width: 3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    monthName,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                      color: isSelected
+                                          ? const Color(0xFF6366F1)
+                                          : Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ],
                         ),
                       ),
                       crossFadeState: isExpanded
