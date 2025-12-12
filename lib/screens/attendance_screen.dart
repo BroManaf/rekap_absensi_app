@@ -640,8 +640,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     
                     return {
                       'date': '${detail['date'].day}',
-                      'day': detail['dayOfWeek'],
-                      'time': detail['checkInTime'],
+                      'day': detail['dayOfWeek'] as String,
+                      'time': detail['checkInTime'] as String,
                       'duration': timeStr,
                     };
                   }).toList(),
@@ -664,8 +664,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     
                     return {
                       'date': '${detail['date'].day}',
-                      'day': detail['dayOfWeek'],
-                      'time': detail['checkOutTime'],
+                      'day': detail['dayOfWeek'] as String,
+                      'time': detail['checkOutTime'] as String,
                       'duration': timeStr,
                     };
                   }).toList(),
