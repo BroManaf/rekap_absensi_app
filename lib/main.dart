@@ -35,11 +35,16 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  int? _selectedYear;
+  int? _selectedMonth;
+  final GlobalKey<_HistorisAbsensiScreenState> _historisKey = GlobalKey();
 
-  final List<Widget> _screens = [
-    const AttendanceScreen(),
-    const HistorisAbsensiScreen(),
-  ];
+  void _onDataSaved() {
+    // Refresh historis screen when data is saved
+    setState(() {
+      _selectedIndex = 1; // Navigate to historis absensi
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,13 +64,23 @@ class _MainScreenState extends State<MainScreen> {
           if (_selectedIndex == 1)
             HistorisSidebar(
               onDateSelected: (year, month) {
-                // Handle date selection if needed
-                // You can pass this to HistorisAbsensiScreen through a callback
+                setState(() {
+                  _selectedYear = year;
+                  _selectedMonth = month;
+                });
+                // Notify historis screen to load data
+                _historisKey.currentState?.loadData(year, month);
               },
             ),
           // Main Content
           Expanded(
-            child: _screens[_selectedIndex],
+            child: _selectedIndex == 0
+                ? AttendanceScreen(onDataSaved: _onDataSaved)
+                : HistorisAbsensiScreen(
+                    key: _historisKey,
+                    selectedYear: _selectedYear,
+                    selectedMonth: _selectedMonth,
+                  ),
           ),
         ],
       ),

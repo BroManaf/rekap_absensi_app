@@ -9,9 +9,12 @@ import '../models/employee.dart';
 import '../models/attendance_record.dart';
 import '../models/attendance_summary.dart';
 import '../services/attendance_service.dart';
+import '../services/attendance_storage_service.dart';
 
 class AttendanceScreen extends StatefulWidget {
-  const AttendanceScreen({super.key});
+  final VoidCallback? onDataSaved;
+  
+  const AttendanceScreen({super.key, this.onDataSaved});
 
   @override
   State<AttendanceScreen> createState() => _AttendanceScreenState();
@@ -25,6 +28,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   final Set<int> _expandedRows = {};
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  int? _dataYear;
+  int? _dataMonth;
 
   @override
   void dispose() {
@@ -224,12 +229,29 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   ),
                                   const SizedBox(width: 16),
                                   ElevatedButton.icon(
+                                    onPressed: _saveData,
+                                    icon: const Icon(Icons.save, size: 16),
+                                    label: const Text('Simpan Data'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF10B981),
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton.icon(
                                     onPressed: () {
                                       setState(() {
                                         _summaries.clear();
                                         _currentFileName = null;
                                         _searchQuery = '';
                                         _searchController.clear();
+                                        _dataYear = null;
+                                        _dataMonth = null;
                                       });
                                     },
                                     icon: const Icon(Icons.refresh, size: 16),
@@ -1111,6 +1133,74 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
+  Future<void> _saveData() async {
+    if (_summaries.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Tidak ada data untuk disimpan'),
+            backgroundColor: Colors.orange[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (_dataYear == null || _dataMonth == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Bulan/tahun tidak terdeteksi dari data Excel'),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
+    final success = await AttendanceStorageService.saveAttendanceData(
+      year: _dataYear!,
+      month: _dataMonth!,
+      summaries: _summaries,
+    );
+
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Data berhasil disimpan untuk ${_getMonthName(_dataMonth!)} $_dataYear'),
+            backgroundColor: Colors.green[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        // Navigate to historis screen
+        widget.onDataSaved?.call();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Gagal menyimpan data'),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    return months[month - 1];
+  }
+
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -1327,6 +1417,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         print('[DEBUG] Could not detect month/year, using current: $year-$month');
       }
     }
+
+    // Store year and month for saving
+    _dataYear = year;
+    _dataMonth = month;
 
     // Determine number of days in the detected month
     final daysInMonth = DateTime(year, month + 1, 0).day;
