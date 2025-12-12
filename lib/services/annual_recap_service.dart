@@ -13,6 +13,8 @@ class AnnualRecapService {
       // Map to store employee info: key = userId, value = (name, department)
       final Map<String, Map<String, String>> employeeInfoMap = {};
 
+      debugPrint('[AnnualRecapService] Starting to fetch annual data for year $year');
+
       // Fetch data for each month (1-12)
       for (int month = 1; month <= 12; month++) {
         final summaries = await AttendanceStorageService.loadAttendanceData(
@@ -28,12 +30,15 @@ class AnnualRecapService {
             final name = summary.employee.name;
             final department = summary.employee.department.name;
 
+            debugPrint('[AnnualRecapService] Processing employee: $name (ID: $userId) for month $month');
+
             // Store employee info (use first occurrence)
             if (!employeeInfoMap.containsKey(userId)) {
               employeeInfoMap[userId] = {
                 'name': name,
                 'department': department,
               };
+              debugPrint('[AnnualRecapService] Registered new employee: $name (ID: $userId)');
             }
 
             // Initialize monthly data map if not exists
@@ -52,32 +57,49 @@ class AnnualRecapService {
             );
 
             debugPrint('[AnnualRecapService] Added data for $name ($userId) in month $month: '
-                'Masuk=${summary.totalMasukMinutes}min/${summary.daysMasuk}days, '
-                'Telat=${summary.totalTelatMinutes}min/${summary.daysTelat}days, '
-                'Lembur=${summary.totalLemburMinutes}min/${summary.daysLembur}days');
+                'Masuk=${summary.totalMasukMinutes}min (${summary.totalMasukMinutes ~/ 60}h ${summary.totalMasukMinutes % 60}m) /${summary.daysMasuk}days, '
+                'Telat=${summary.totalTelatMinutes}min (${summary.totalTelatMinutes ~/ 60}h ${summary.totalTelatMinutes % 60}m) /${summary.daysTelat}days, '
+                'Lembur=${summary.totalLemburMinutes}min (${summary.totalLemburMinutes ~/ 60}h ${summary.totalLemburMinutes % 60}m) /${summary.daysLembur}days');
           }
+        } else {
+          debugPrint('[AnnualRecapService] Month $month: No data found');
         }
       }
+
+      debugPrint('[AnnualRecapService] Total unique employees found: ${employeeInfoMap.length}');
+      debugPrint('[AnnualRecapService] Employee list: ${employeeInfoMap.keys.join(", ")}');
 
       // Convert to list of EmployeeAnnualData
       final List<EmployeeAnnualData> result = [];
       for (var userId in employeeMonthlyDataMap.keys) {
-        final info = employeeInfoMap[userId]!;
-        result.add(EmployeeAnnualData(
-          userId: userId,
-          name: info['name']!,
-          department: info['department']!,
-          monthlyData: employeeMonthlyDataMap[userId]!,
-        ));
+        final info = employeeInfoMap[userId];
+        if (info != null) {
+          final employeeAnnualData = EmployeeAnnualData(
+            userId: userId,
+            name: info['name']!,
+            department: info['department']!,
+            monthlyData: employeeMonthlyDataMap[userId]!,
+          );
+          result.add(employeeAnnualData);
+          
+          // Log summary for this employee
+          final monthsWithData = employeeMonthlyDataMap[userId]!.keys.toList()..sort();
+          debugPrint('[AnnualRecapService] Employee ${info['name']} has data for months: $monthsWithData');
+        }
       }
 
       // Sort by name
       result.sort((a, b) => a.name.compareTo(b.name));
 
-      debugPrint('[AnnualRecapService] Fetched data for ${result.length} employees for year $year');
+      debugPrint('[AnnualRecapService] Final result: ${result.length} employees for year $year');
+      for (var emp in result) {
+        debugPrint('[AnnualRecapService] - ${emp.name} (${emp.userId}): ${emp.monthlyData.length} months of data');
+      }
+      
       return result;
     } catch (e) {
       debugPrint('[AnnualRecapService] Error fetching annual data: $e');
+      debugPrint('[AnnualRecapService] Stack trace: ${StackTrace.current}');
       return [];
     }
   }
