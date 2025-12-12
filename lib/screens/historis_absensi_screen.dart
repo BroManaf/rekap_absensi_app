@@ -1110,8 +1110,23 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
         return;
       }
 
-      // Get the bytes and filename
-      final bytes = excelData['bytes'] as List<int>;
+      // Get the bytes and filename with safe type checking
+      final bytesData = excelData['bytes'];
+      if (bytesData == null || bytesData is! List<int>) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Format file Excel tidak valid'),
+              backgroundColor: Colors.red[600],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
+      
+      final bytes = bytesData as List<int>;
       final originalFilename = excelData['filename'] as String?;
       
       // Generate a default filename if not available

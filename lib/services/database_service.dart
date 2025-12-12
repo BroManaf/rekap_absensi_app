@@ -242,13 +242,26 @@ class DatabaseService {
       }
       
       final excelFileData = results.first['excel_file'];
+      
+      if (excelFileData == null) {
+        return null;
+      }
+      
       List<int> bytes;
       
       // Handle different possible types returned by SQLite
       if (excelFileData is List<int>) {
         bytes = excelFileData;
+      } else if (excelFileData is Iterable) {
+        try {
+          bytes = List<int>.from(excelFileData);
+        } catch (e) {
+          debugPrint('Error converting Excel file data to List<int>: $e');
+          return null;
+        }
       } else {
-        bytes = List<int>.from(excelFileData);
+        debugPrint('Unexpected Excel file data type: ${excelFileData.runtimeType}');
+        return null;
       }
       
       return {
