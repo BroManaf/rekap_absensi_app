@@ -8,9 +8,10 @@ class AnnualRecapService {
   /// Returns a list of EmployeeAnnualData sorted by employee name
   static Future<List<EmployeeAnnualData>> fetchAnnualData(int year) async {
     try {
-      // Map to store monthly data for each employee: key = userId, value = map of monthly data
+      // Use composite key (userId + name) to handle cases where multiple employees have same User ID
+      // Map to store monthly data for each employee: key = "userId|name", value = map of monthly data
       final Map<String, Map<int, MonthlyData>> employeeMonthlyDataMap = {};
-      // Map to store employee info: key = userId, value = (name, department)
+      // Map to store employee info: key = "userId|name", value = (userId, name, department)
       final Map<String, Map<String, String>> employeeInfoMap = {};
 
       debugPrint('[AnnualRecapService] Starting to fetch annual data for year $year');
@@ -30,24 +31,28 @@ class AnnualRecapService {
             final name = summary.employee.name;
             final department = summary.employee.department.name;
 
+            // Create composite key using userId and name to handle duplicate User IDs
+            final compositeKey = '$userId|$name';
+
             debugPrint('[AnnualRecapService] Processing employee: $name (ID: $userId) for month $month');
 
             // Store employee info (use first occurrence)
-            if (!employeeInfoMap.containsKey(userId)) {
-              employeeInfoMap[userId] = {
+            if (!employeeInfoMap.containsKey(compositeKey)) {
+              employeeInfoMap[compositeKey] = {
+                'userId': userId,
                 'name': name,
                 'department': department,
               };
-              debugPrint('[AnnualRecapService] Registered new employee: $name (ID: $userId)');
+              debugPrint('[AnnualRecapService] Registered new employee: $name (ID: $userId) with composite key: $compositeKey');
             }
 
             // Initialize monthly data map if not exists
-            if (!employeeMonthlyDataMap.containsKey(userId)) {
-              employeeMonthlyDataMap[userId] = {};
+            if (!employeeMonthlyDataMap.containsKey(compositeKey)) {
+              employeeMonthlyDataMap[compositeKey] = {};
             }
 
             // Add monthly data
-            employeeMonthlyDataMap[userId]![month] = MonthlyData(
+            employeeMonthlyDataMap[compositeKey]![month] = MonthlyData(
               totalMasukMinutes: summary.totalMasukMinutes,
               totalTelatMinutes: summary.totalTelatMinutes,
               totalLemburMinutes: summary.totalLemburMinutes,
@@ -67,24 +72,24 @@ class AnnualRecapService {
       }
 
       debugPrint('[AnnualRecapService] Total unique employees found: ${employeeInfoMap.length}');
-      debugPrint('[AnnualRecapService] Employee list: ${employeeInfoMap.keys.join(", ")}');
+      debugPrint('[AnnualRecapService] Employee list: ${employeeInfoMap.values.map((e) => "${e['name']} (${e['userId']})").join(", ")}');
 
       // Convert to list of EmployeeAnnualData
       final List<EmployeeAnnualData> result = [];
-      for (var userId in employeeMonthlyDataMap.keys) {
-        final info = employeeInfoMap[userId];
+      for (var compositeKey in employeeMonthlyDataMap.keys) {
+        final info = employeeInfoMap[compositeKey];
         if (info != null) {
           final employeeAnnualData = EmployeeAnnualData(
-            userId: userId,
+            userId: info['userId']!,
             name: info['name']!,
             department: info['department']!,
-            monthlyData: employeeMonthlyDataMap[userId]!,
+            monthlyData: employeeMonthlyDataMap[compositeKey]!,
           );
           result.add(employeeAnnualData);
           
           // Log summary for this employee
-          final monthsWithData = employeeMonthlyDataMap[userId]!.keys.toList()..sort();
-          debugPrint('[AnnualRecapService] Employee ${info['name']} has data for months: $monthsWithData');
+          final monthsWithData = employeeMonthlyDataMap[compositeKey]!.keys.toList()..sort();
+          debugPrint('[AnnualRecapService] Employee ${info['name']} (${info['userId']}) has data for months: $monthsWithData');
         }
       }
 
