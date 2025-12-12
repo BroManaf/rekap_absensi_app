@@ -1,5 +1,12 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Service for managing application settings (small configuration data only)
+/// 
+/// Note: SharedPreferences is ONLY used here for small settings like database path.
+/// Large data (attendance records) are stored in SQLite via DatabaseService.
+/// This is the correct architectural pattern:
+/// - SharedPreferences: Small settings, preferences (KB range)
+/// - SQLite Database: Large structured data (MB-GB range)
 class SettingsService {
   static const String _databasePathKey = 'database_path';
 

@@ -92,9 +92,13 @@ class DatabaseService {
   /// Change database location
   static Future<bool> changeDatabaseLocation(String newPath) async {
     try {
-      // Ensure the new path has the correct extension
-      String finalPath = newPath;
-      if (!newPath.endsWith('.db')) {
+      // Always treat newPath as a directory and create the database file path
+      String finalPath;
+      if (newPath.endsWith('.db')) {
+        // If user somehow provides a .db file path, use it as-is
+        finalPath = newPath;
+      } else {
+        // Treat as directory and append database filename
         finalPath = path.join(newPath, 'attendance.db');
       }
 
@@ -111,10 +115,13 @@ class DatabaseService {
       }
 
       // Copy old database to new location if it exists
-      if (_currentDatabasePath != null) {
+      // Note: We copy (not move) for safety. The old file stays as backup.
+      // Users can manually delete the old database file after verifying the new location works.
+      if (_currentDatabasePath != null && _currentDatabasePath != finalPath) {
         final oldFile = File(_currentDatabasePath!);
         if (await oldFile.exists()) {
           await oldFile.copy(finalPath);
+          debugPrint('[DatabaseService] Database copied from $_currentDatabasePath to $finalPath');
         }
       }
 

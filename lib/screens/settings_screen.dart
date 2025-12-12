@@ -32,7 +32,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _isLoading = true;
       });
 
-      // Let user select a directory
+      // Let user select a directory (not a file)
+      // The database filename (attendance.db) will be automatically appended by DatabaseService
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
         dialogTitle: 'Pilih Lokasi Penyimpanan Database',
       );

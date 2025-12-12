@@ -127,14 +127,21 @@ Ketika aplikasi pertama kali dijalankan setelah update:
 1. Di menu Pengaturan, klik **"Ubah Lokasi Penyimpanan"**
 2. Pilih folder tujuan baru
 3. Konfirmasi perubahan
-4. Database akan dipindahkan dan aplikasi akan menggunakan lokasi baru
+4. Database akan di-**copy** (bukan dipindahkan) ke lokasi baru
+5. Aplikasi akan menggunakan lokasi baru untuk operasi selanjutnya
+
+**Catatan Penting:**
+- File database di lokasi lama **TIDAK otomatis dihapus** sebagai backup
+- Anda dapat menghapus file lama secara manual setelah memverifikasi lokasi baru bekerja dengan baik
+- Lokasi file lama tetap ditampilkan di folder aslinya
 
 ## ⚠️ Hal Penting
 
 ### Keamanan Data:
-- **Backup**: Selalu backup database sebelum memindahkan ke lokasi baru
+- **Copy, bukan Move**: Database di-copy ke lokasi baru, file lama tetap sebagai backup
+- **Manual Cleanup**: Anda bisa menghapus database lama secara manual jika sudah yakin lokasi baru berfungsi
 - **Path Valid**: Pastikan lokasi tujuan memiliki permission write
-- **Space**: Pastikan lokasi tujuan memiliki ruang disk yang cukup
+- **Space**: Pastikan lokasi tujuan memiliki ruang disk yang cukup (2x ukuran database saat pindah)
 
 ### Best Practices:
 - **Jangan** menyimpan database di folder temporary
