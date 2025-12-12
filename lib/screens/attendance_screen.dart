@@ -272,23 +272,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const SizedBox(width: 40), // Space for expand icon
-              const SizedBox(
-                width: 50,
-                child: Text(
-                  'No',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Color(0xFF374151),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
               const Expanded(
-                flex: 2,
+                flex: 3,
                 child: Text(
-                  'Nama Karyawan',
+                  'User Info',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -296,31 +283,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: Text(
-                  'User ID',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: Text(
-                  'Department',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 16),
               Expanded(
                 flex: 1,
                 child: Text(
@@ -333,7 +296,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 16),
               Expanded(
                 flex: 1,
                 child: Text(
@@ -346,7 +309,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 16),
               Expanded(
                 flex: 1,
                 child: Text(
@@ -401,143 +364,89 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 bottom: BorderSide(color: Colors.grey[200]!, width: 1),
               ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
-                // Expand Icon
-                AnimatedRotation(
-                  duration: const Duration(milliseconds: 200),
-                  turns: isExpanded ? 0.25 : 0.0,
-                  child: Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: Colors.grey[600],
+                // User Info - Combined Name (UserID) and Department
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name and User ID on same line
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF111827),
+                          ),
+                          children: [
+                            TextSpan(text: summary.employee.name),
+                            TextSpan(
+                              text: ' (${summary.employee.userId})',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF6B7280), // grey[700]
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Department on second line
+                      Text(
+                        summary.employee.department.name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280), // grey[600]
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                // No
-                SizedBox(
-                  width: 50,
+                const SizedBox(width: 16),
+                // Masuk - Simple count display
+                Expanded(
+                  flex: 1,
                   child: Text(
-                    '${index + 1}',
+                    '${summary.daysMasuk}',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[700],
+                      color: Colors.grey[800],
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                // Nama Karyawan
+                const SizedBox(width: 16),
+                // Telat - Simple count display
                 Expanded(
-                  flex: 2,
+                  flex: 1,
                   child: Text(
-                    summary.employee.name,
-                    style: const TextStyle(
+                    '${summary.daysTelat}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                // User ID
+                const SizedBox(width: 16),
+                // Lembur - Total hours display
                 Expanded(
                   flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(4),
+                  child: Text(
+                    summary.totalLemburSimple,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.w500,
                     ),
-                    child: Text(
-                      summary.employee.userId,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Department
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.purple[50],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      summary.employee.department.name,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.purple[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Masuk
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.access_time, size: 14, color: Colors.green[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        summary.totalMasukFormatted,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.green[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Telat
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.warning_amber_rounded, size: 14, color: Colors.orange[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        summary.totalTelatFormatted,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.orange[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Lembur
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.nights_stay, size: 14, color: Colors.indigo[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        summary.totalLemburFormatted,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.indigo[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],

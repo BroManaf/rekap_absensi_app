@@ -39,4 +39,10 @@ class AttendanceSummary {
     final minutes = totalLemburMinutes % 60;
     return '${hours}h ${minutes}m /$daysLembur';
   }
+
+  String get totalLemburSimple {
+    final hours = totalLemburMinutes ~/ 60;
+    final minutes = totalLemburMinutes % 60;
+    return '${hours}h ${minutes}m';
+  }
 }
