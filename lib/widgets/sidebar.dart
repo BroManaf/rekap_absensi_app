@@ -63,16 +63,13 @@ class Sidebar extends StatelessWidget {
           
           const Spacer(),
           
-          // Bottom Section (Optional - bisa untuk settings atau profile)
+          // Settings Section
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
-            child: IconButton(
-              icon: const Icon(
-                Icons.settings_outlined,
-                color: Color(0xFF9CA3AF),
-              ),
-              onPressed: () {},
-              tooltip: 'Settings',
+            child: _buildMenuItem(
+              icon: Icons.settings_outlined,
+              index: 2,
+              tooltip: 'Pengaturan',
             ),
           ),
         ],

@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show debugPrint;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/attendance_summary.dart';
 import '../models/attendance_record.dart';
 import '../models/employee.dart';
 import '../models/department.dart';
+import 'database_service.dart';
 
 class AttendanceStorageService {
-  static const String _storageKey = 'attendance_history';
 
   /// Save attendance data for a specific year and month
   static Future<bool> saveAttendanceData({
@@ -16,16 +15,6 @@ class AttendanceStorageService {
     required List<AttendanceSummary> summaries,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Get existing data
-      final String? existingData = prefs.getString(_storageKey);
-      Map<String, dynamic> allData = {};
-      
-      if (existingData != null) {
-        allData = json.decode(existingData);
-      }
-      
       // Create key for this month/year
       final key = '$year-${month.toString().padLeft(2, '0')}';
       
@@ -33,12 +22,10 @@ class AttendanceStorageService {
       final summariesJson = summaries.map((summary) => _summaryToJson(summary)).toList();
       
       // Store the data
-      allData[key] = summariesJson;
+      final jsonData = json.encode(summariesJson);
       
-      // Save back to preferences
-      await prefs.setString(_storageKey, json.encode(allData));
-      
-      return true;
+      // Save to database
+      return await DatabaseService.saveData(key, jsonData);
     } catch (e) {
       debugPrint('Error saving attendance data: $e');
       return false;
@@ -51,21 +38,15 @@ class AttendanceStorageService {
     required int month,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? existingData = prefs.getString(_storageKey);
-      
-      if (existingData == null) {
-        return null;
-      }
-      
-      final Map<String, dynamic> allData = json.decode(existingData);
       final key = '$year-${month.toString().padLeft(2, '0')}';
       
-      if (!allData.containsKey(key)) {
+      final jsonData = await DatabaseService.loadData(key);
+      
+      if (jsonData == null) {
         return null;
       }
       
-      final List<dynamic> summariesJson = allData[key];
+      final List<dynamic> summariesJson = json.decode(jsonData);
       final summaries = summariesJson.map((json) => _summaryFromJson(json)).toList();
       
       return summaries;
@@ -78,17 +59,10 @@ class AttendanceStorageService {
   /// Get all available months with data
   static Future<List<Map<String, int>>> getAvailableMonths() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? existingData = prefs.getString(_storageKey);
-      
-      if (existingData == null) {
-        return [];
-      }
-      
-      final Map<String, dynamic> allData = json.decode(existingData);
+      final keys = await DatabaseService.getAllKeys();
       final List<Map<String, int>> months = [];
       
-      for (var key in allData.keys) {
+      for (var key in keys) {
         final parts = key.split('-');
         if (parts.length == 2) {
           months.add({
@@ -118,23 +92,10 @@ class AttendanceStorageService {
     required int month,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? existingData = prefs.getString(_storageKey);
-      
-      if (existingData == null) {
-        return false;
-      }
-      
-      final Map<String, dynamic> allData = json.decode(existingData);
       final key = '$year-${month.toString().padLeft(2, '0')}';
       
-      // Remove the data for this month/year
-      allData.remove(key);
-      
-      // Save back to preferences
-      await prefs.setString(_storageKey, json.encode(allData));
-      
-      return true;
+      // Delete from database
+      return await DatabaseService.deleteData(key);
     } catch (e) {
       debugPrint('Error deleting attendance data: $e');
       return false;

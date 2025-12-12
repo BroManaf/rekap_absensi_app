@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'screens/attendance_screen.dart';
 import 'screens/historis_absensi_screen.dart';
+import 'screens/settings_screen.dart';
 import 'widgets/sidebar.dart';
 import 'widgets/historis_sidebar.dart';
+import 'services/database_service.dart';
+import 'services/migration_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize database
+  await DatabaseService.initialize();
+  
+  // Migrate old data if needed
+  await MigrationService.migrateIfNeeded();
+  
   runApp(const MyApp());
 }
 
@@ -76,11 +87,13 @@ class _MainScreenState extends State<MainScreen> {
           Expanded(
             child: _selectedIndex == 0
                 ? AttendanceScreen(onDataSaved: _onDataSaved)
-                : HistorisAbsensiScreen(
-                    key: _historisKey,
-                    selectedYear: _selectedYear,
-                    selectedMonth: _selectedMonth,
-                  ),
+                : _selectedIndex == 1
+                    ? HistorisAbsensiScreen(
+                        key: _historisKey,
+                        selectedYear: _selectedYear,
+                        selectedMonth: _selectedMonth,
+                      )
+                    : const SettingsScreen(),
           ),
         ],
       ),
