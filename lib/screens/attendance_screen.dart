@@ -592,23 +592,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
         ),
         // Expanded Details
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: isExpanded
-              ? Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey[300]!, width: 1),
-                    ),
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  child: _buildDetailView(summary),
-                )
-              : const SizedBox.shrink(),
-        ),
+        if (isExpanded)
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              border: Border(
+                bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+              ),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: _buildDetailView(summary),
+          ),
       ],
     );
   }
