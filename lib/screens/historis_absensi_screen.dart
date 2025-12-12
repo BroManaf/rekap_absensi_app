@@ -8,6 +8,7 @@ import '../models/attendance_record.dart';
 import '../services/attendance_service.dart';
 import '../services/attendance_storage_service.dart';
 import '../utils/date_utils.dart' as date_utils;
+import 'annual_recap_screen.dart';
 
 class HistorisAbsensiScreen extends StatefulWidget {
   final int? selectedYear;
@@ -74,7 +75,8 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
       _searchController.clear();
     });
 
-    // For Annual Recap (month = 0), just set empty data
+    // For Annual Recap (month = 0), no need to load monthly data
+    // The AnnualRecapScreen will handle its own data loading
     if (month == annualRecapMonth) {
       setState(() {
         _summaries = [];
@@ -96,6 +98,12 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // If Annual Recap mode, show the AnnualRecapScreen
+    if (_isAnnualRecap && _currentYear != null) {
+      return AnnualRecapScreen(selectedYear: _currentYear);
+    }
+
+    // Otherwise show the regular monthly historis view
     return Container(
       color: const Color(0xFFF5F5F7),
       padding: const EdgeInsets.all(32),
@@ -119,9 +127,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                   const SizedBox(height: 8),
                   Text(
                     _currentYear != null && _currentMonth != null
-                        ? _isAnnualRecap
-                            ? 'Annual Recap $_currentYear'
-                            : 'Data absensi ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
+                        ? 'Data absensi ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
                         : 'Pilih periode dari sidebar untuk melihat data',
                     style: TextStyle(
                       color: Colors.grey[600],
@@ -179,9 +185,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 _currentYear != null && _currentMonth != null
-                                    ? _isAnnualRecap
-                                        ? 'Annual Recap $_currentYear'
-                                        : 'Tidak ada data untuk ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
+                                    ? 'Tidak ada data untuk ${date_utils.DateUtils.getMonthName(_currentMonth!)} $_currentYear'
                                     : 'Pilih periode dari sidebar',
                                 style: TextStyle(
                                   fontSize: 18,
@@ -192,9 +196,7 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                               const SizedBox(height: 8),
                               Text(
                                 _currentYear != null && _currentMonth != null
-                                    ? _isAnnualRecap
-                                        ? 'Konten Annual Recap belum tersedia'
-                                        : 'Silakan upload dan simpan data terlebih dahulu'
+                                    ? 'Silakan upload dan simpan data terlebih dahulu'
                                     : 'Klik tahun dan bulan di sidebar untuk melihat data historis',
                                 style: TextStyle(
                                   fontSize: 14,
