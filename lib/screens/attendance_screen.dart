@@ -272,11 +272,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const SizedBox(width: 40), // Space for expand icon
               const SizedBox(
-                width: 50,
+                width: 80,
                 child: Text(
-                  'No',
+                  'User ID',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -293,30 +292,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                     color: Color(0xFF374151),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: Text(
-                  'User ID',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: Text(
-                  'Department',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: Colors.grey[700],
                   ),
                 ),
               ),
@@ -404,80 +379,44 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                // Expand Icon
-                AnimatedRotation(
-                  duration: const Duration(milliseconds: 200),
-                  turns: isExpanded ? 0.25 : 0.0,
-                  child: Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // No
+                // User ID
                 SizedBox(
-                  width: 50,
+                  width: 80,
                   child: Text(
-                    '${index + 1}',
+                    summary.employee.userId,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: Colors.grey[700],
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Nama Karyawan
+                // Nama Karyawan + Department (stacked)
                 Expanded(
                   flex: 2,
-                  child: Text(
-                    summary.employee.name,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // User ID
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      summary.employee.userId,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue[700],
-                        fontWeight: FontWeight.w500,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        summary.employee.name,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Department
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.purple[50],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      summary.employee.department.name,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.purple[700],
-                        fontWeight: FontWeight.w500,
+                      const SizedBox(height: 2),
+                      Text(
+                        summary.employee.department.name,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
