@@ -221,12 +221,31 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
                                       ),
                                     ],
                                   ),
-                                  Text(
-                                    '${_summaries.length} karyawan',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                    ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${_summaries.length} karyawan',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      ElevatedButton.icon(
+                                        onPressed: _deleteData,
+                                        icon: const Icon(Icons.delete, size: 16),
+                                        label: const Text('Hapus Data'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red[600],
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -1044,6 +1063,79 @@ class HistorisAbsensiScreenState extends State<HistorisAbsensiScreen> {
           ),
       ],
     );
+  }
+
+  Future<void> _deleteData() async {
+    if (_currentYear == null || _currentMonth == null) {
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Data'),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus semua data absensi untuk ${_getMonthName(_currentMonth!)} $_currentYear?\n\nTindakan ini tidak dapat dibatalkan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red[600],
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    // Delete the data
+    final success = await AttendanceStorageService.deleteAttendanceData(
+      year: _currentYear!,
+      month: _currentMonth!,
+    );
+
+    if (mounted) {
+      if (success) {
+        // Clear the current data
+        setState(() {
+          _summaries = [];
+          _currentYear = null;
+          _currentMonth = null;
+          _expandedRows.clear();
+          _searchQuery = '';
+          _searchController.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Data berhasil dihapus'),
+            backgroundColor: Colors.green[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Gagal menghapus data'),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   String _getMonthName(int month) {

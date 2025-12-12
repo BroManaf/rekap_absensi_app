@@ -112,6 +112,35 @@ class AttendanceStorageService {
     }
   }
 
+  /// Delete attendance data for a specific year and month
+  static Future<bool> deleteAttendanceData({
+    required int year,
+    required int month,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? existingData = prefs.getString(_storageKey);
+      
+      if (existingData == null) {
+        return false;
+      }
+      
+      final Map<String, dynamic> allData = json.decode(existingData);
+      final key = '$year-${month.toString().padLeft(2, '0')}';
+      
+      // Remove the data for this month/year
+      allData.remove(key);
+      
+      // Save back to preferences
+      await prefs.setString(_storageKey, json.encode(allData));
+      
+      return true;
+    } catch (e) {
+      debugPrint('Error deleting attendance data: $e');
+      return false;
+    }
+  }
+
   // Convert AttendanceSummary to JSON
   static Map<String, dynamic> _summaryToJson(AttendanceSummary summary) {
     return {
