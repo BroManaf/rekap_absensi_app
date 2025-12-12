@@ -8,8 +8,10 @@ class AnnualRecapService {
   /// Returns a list of EmployeeAnnualData sorted by employee name
   static Future<List<EmployeeAnnualData>> fetchAnnualData(int year) async {
     try {
-      // Map to store employee data: key = userId, value = employee data
-      final Map<String, EmployeeAnnualData> employeeDataMap = {};
+      // Map to store monthly data for each employee: key = userId, value = map of monthly data
+      final Map<String, Map<int, MonthlyData>> employeeMonthlyDataMap = {};
+      // Map to store employee info: key = userId, value = (name, department)
+      final Map<String, Map<String, String>> employeeInfoMap = {};
 
       // Fetch data for each month (1-12)
       for (int month = 1; month <= 12; month++) {
@@ -19,21 +21,28 @@ class AnnualRecapService {
         );
 
         if (summaries != null && summaries.isNotEmpty) {
+          debugPrint('[AnnualRecapService] Month $month: Found ${summaries.length} employees');
+          
           for (var summary in summaries) {
             final userId = summary.employee.userId;
+            final name = summary.employee.name;
+            final department = summary.employee.department.name;
 
-            // Create or update employee data
-            if (!employeeDataMap.containsKey(userId)) {
-              employeeDataMap[userId] = EmployeeAnnualData(
-                userId: userId,
-                name: summary.employee.name,
-                department: summary.employee.department.name,
-                monthlyData: {},
-              );
+            // Store employee info (use first occurrence)
+            if (!employeeInfoMap.containsKey(userId)) {
+              employeeInfoMap[userId] = {
+                'name': name,
+                'department': department,
+              };
+            }
+
+            // Initialize monthly data map if not exists
+            if (!employeeMonthlyDataMap.containsKey(userId)) {
+              employeeMonthlyDataMap[userId] = {};
             }
 
             // Add monthly data
-            employeeDataMap[userId]!.monthlyData[month] = MonthlyData(
+            employeeMonthlyDataMap[userId]![month] = MonthlyData(
               totalMasukMinutes: summary.totalMasukMinutes,
               totalTelatMinutes: summary.totalTelatMinutes,
               totalLemburMinutes: summary.totalLemburMinutes,
@@ -41,12 +50,28 @@ class AnnualRecapService {
               daysTelat: summary.daysTelat,
               daysLembur: summary.daysLembur,
             );
+
+            debugPrint('[AnnualRecapService] Added data for $name ($userId) in month $month: '
+                'Masuk=${summary.totalMasukMinutes}min/${summary.daysMasuk}days, '
+                'Telat=${summary.totalTelatMinutes}min/${summary.daysTelat}days, '
+                'Lembur=${summary.totalLemburMinutes}min/${summary.daysLembur}days');
           }
         }
       }
 
-      // Convert map to list and sort by name
-      final List<EmployeeAnnualData> result = employeeDataMap.values.toList();
+      // Convert to list of EmployeeAnnualData
+      final List<EmployeeAnnualData> result = [];
+      for (var userId in employeeMonthlyDataMap.keys) {
+        final info = employeeInfoMap[userId]!;
+        result.add(EmployeeAnnualData(
+          userId: userId,
+          name: info['name']!,
+          department: info['department']!,
+          monthlyData: employeeMonthlyDataMap[userId]!,
+        ));
+      }
+
+      // Sort by name
       result.sort((a, b) => a.name.compareTo(b.name));
 
       debugPrint('[AnnualRecapService] Fetched data for ${result.length} employees for year $year');
