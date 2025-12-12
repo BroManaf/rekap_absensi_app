@@ -97,6 +97,7 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                         });
                       },
                       child: Container(
+                        width: double.infinity,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 16,
@@ -104,22 +105,17 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                         color: isExpanded
                             ? const Color(0xFFF3F4F6)
                             : Colors.transparent,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              year.toString(),
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: isExpanded
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                                color: isExpanded
-                                    ? const Color(0xFF6366F1)
-                                    : Colors.grey.shade700,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          year.toString(),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: isExpanded
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                            color: isExpanded
+                                ? const Color(0xFF6366F1)
+                                : Colors.grey.shade700,
+                          ),
                         ),
                       ),
                     ),
@@ -145,6 +141,7 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                                 widget.onDateSelected?.call(year, monthIndex + 1);
                               },
                               child: Container(
+                                width: double.infinity,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 32,
                                   vertical: 12,
@@ -162,21 +159,17 @@ class _HistorisSidebarState extends State<HistorisSidebar> {
                                     ),
                                   ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      monthName,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
-                                        color: isSelected
-                                            ? const Color(0xFF6366F1)
-                                            : Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  monthName,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    color: isSelected
+                                        ? const Color(0xFF6366F1)
+                                        : Colors.grey.shade600,
+                                  ),
                                 ),
                               ),
                             );
