@@ -11,13 +11,20 @@ Aplikasi Flutter untuk mengelola dan merekap data absensi karyawan dari file Exc
 - Tampilan ringkasan per karyawan dengan total akumulasi 31 hari
 - Support untuk berbagai department dengan jam kerja yang berbeda
 - **Fitur Pencarian**: Cari karyawan berdasarkan User ID atau Nama (lihat [SEARCH_FEATURE.md](SEARCH_FEATURE.md))
+- **Penyimpanan Database**: Menggunakan SQLite untuk performa optimal dengan data besar
 
 ### 2. Export Excel
 - Upload dan proses multiple sheets Excel
 - Ekstraksi data dari berbagai format Excel
 
 ### 3. Historis Absensi
-- (Coming soon) Lihat riwayat data absensi
+- Lihat riwayat data absensi per bulan
+- Penyimpanan permanen data absensi
+
+### 4. Pengaturan
+- **Konfigurasi Lokasi Database**: Pilih lokasi penyimpanan database sesuai keinginan
+- Pindahkan database ke folder khusus, drive eksternal, atau network drive
+- Lihat [DATABASE_MIGRATION_GUIDE.md](DATABASE_MIGRATION_GUIDE.md) untuk informasi lengkap
 
 ## Format File Excel
 
