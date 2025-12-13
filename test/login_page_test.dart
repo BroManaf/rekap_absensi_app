@@ -40,7 +40,7 @@ void main() {
       expect(find.text('Submit'), findsOneWidget);
 
       // Check for sign up text
-      expect(find.text("Don't have account? "), findsOneWidget);
+      expect(find.text("Don't have an account? "), findsOneWidget);
       expect(find.text('Request a free trial'), findsOneWidget);
     });
 
