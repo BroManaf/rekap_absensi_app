@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/attendance_screen.dart';
 import 'screens/historis_absensi_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/login_screen.dart';
 import 'widgets/sidebar.dart';
 import 'widgets/historis_sidebar.dart';
 import 'services/database_service.dart';
@@ -32,7 +33,10 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF5F5F7),
         fontFamily: 'Inter',
       ),
-      home: const MainScreen(),
+      home: const LoginScreen(),
+      routes: {
+        '/main': (context) => const MainScreen(),
+      },
     );
   }
 }
