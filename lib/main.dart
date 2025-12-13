@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/attendance_screen.dart';
 import 'screens/historis_absensi_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/login_page.dart';
 import 'widgets/sidebar.dart';
 import 'widgets/historis_sidebar.dart';
 import 'services/database_service.dart';
@@ -32,7 +34,48 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF5F5F7),
         fontFamily: 'Inter',
       ),
-      home: const MainScreen(),
+      home: const AuthChecker(),
+      routes: {
+        '/home': (context) => const MainScreen(),
+        '/login': (context) => const LoginPage(),
+      },
+    );
+  }
+}
+
+class AuthChecker extends StatefulWidget {
+  const AuthChecker({super.key});
+
+  @override
+  State<AuthChecker> createState() => _AuthCheckerState();
+}
+
+class _AuthCheckerState extends State<AuthChecker> {
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    
+    if (mounted) {
+      if (isLoggedIn) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }

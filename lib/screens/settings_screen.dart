@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import '../services/database_service.dart';
 
@@ -309,6 +310,95 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Logout Section
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.grey[300]!),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.logout, color: Colors.red[700]),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Keluar dari Akun',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Keluar dari akun Anda dan kembali ke halaman login.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF666666),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Konfirmasi Logout'),
+                              content: const Text('Apakah Anda yakin ingin keluar?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(false),
+                                  child: const Text('Batal'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.of(context).pop(true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
+                                  child: const Text('Keluar'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirmed == true) {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setBool('isLoggedIn', false);
+                            
+                            if (!mounted) return;
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/login',
+                              (route) => false,
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Keluar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                       ),
                     ),
                   ],
